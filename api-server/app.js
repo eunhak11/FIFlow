@@ -27,7 +27,9 @@ app.get('/', (req, res) => {
 // 모든 주식 정보 가져오기 API 엔드포인트
 app.get('/stocks', async (req, res) => {
   try {
-    const stocks = await db.stocks.findAll();
+    console.log('Available models:', Object.keys(db));
+    console.log('db.stock:', db.stock);
+    const stocks = await db.stock.findAll();
     res.status(200).json(stocks);
   } catch (error) {
     console.error('Error fetching stocks:', error);
@@ -68,7 +70,7 @@ app.post('/stock/add', async (req, res) => {
 
           if (fetchedStockName) {
             // stocks 테이블에 저장
-            const [stock, created] = await db.stocks.findOrCreate({
+            const [stock, created] = await db.stock.findOrCreate({
               where: { symbol: symbol },
               defaults: {
                 symbol: symbol,
@@ -135,6 +137,39 @@ app.get('/stock/:symbol/foreign', async (req, res) => {
   } catch (error) {
     console.error('Error fetching market data:', error);
     res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// 주식 삭제 API 엔드포인트
+app.delete('/stock/:symbol', async (req, res) => {
+  console.log('=== 주식 삭제 요청 시작 ===');
+  const { symbol } = req.params;
+  console.log('삭제할 종목 코드:', symbol);
+
+  try {
+    const deletedCount = await db.stock.destroy({
+      where: { symbol: symbol }
+    });
+
+    if (deletedCount > 0) {
+      console.log('주식 삭제 성공:', symbol);
+      res.status(200).json({ 
+        message: '주식이 성공적으로 삭제되었습니다.',
+        symbol: symbol 
+      });
+    } else {
+      console.log('삭제할 주식을 찾을 수 없음:', symbol);
+      res.status(404).json({ 
+        message: '삭제할 주식을 찾을 수 없습니다.',
+        symbol: symbol 
+      });
+    }
+  } catch (error) {
+    console.error('주식 삭제 오류:', error);
+    res.status(500).json({ 
+      message: '주식 삭제 중 오류가 발생했습니다.',
+      error: error.message 
+    });
   }
 });
 
