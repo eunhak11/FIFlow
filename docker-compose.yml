@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8
+    container_name: fiflow-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: your_root_password # 실제 비밀번호로 변경
+      MYSQL_DATABASE: fiflow
+      MYSQL_USER: fiflowuser
+      MYSQL_PASSWORD: fiflowpw
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  api-server:
+    build: ./api-server
+    container_name: fiflow-api-server
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./crawler:/usr/src/app/crawler
+    depends_on:
+      - db
+    environment:
+      DATABASE_HOST: db # config.json의 host와 일치
+    networks:
+      - default
+
+volumes:
+  db_data:
+
+networks:
+  default:
+    driver: bridge

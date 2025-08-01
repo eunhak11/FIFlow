@@ -1,6 +1,7 @@
-import sys
 import requests
 from bs4 import BeautifulSoup
+import sys
+import json
 
 def get_stock_name_from_symbol(symbol):
     """네이버 금융에서 종목 코드를 통해 종목명을 크롤링합니다."""
@@ -14,24 +15,23 @@ def get_stock_name_from_symbol(symbol):
         soup = BeautifulSoup(response.text, 'lxml')
         stock_name_element = soup.select_one("#middle > div.h_company > div.wrap_company > h2 > a")
         if stock_name_element:
-            return stock_name_element.text.strip()
+            stock_name = stock_name_element.text.strip()
+            return stock_name
         else:
-            # print(f"[{symbol}] 종목명을 찾을 수 없습니다.") # 이 메시지는 stdout으로 나가므로 제거
             return None
     except requests.exceptions.RequestException as e:
-        # print(f"HTTP 요청 오류: {e}") # 이 메시지는 stdout으로 나가므로 제거
-        return None
+        print(f"HTTP 요청 오류: {e}", file=sys.stderr)
     except Exception as e:
-        # print(f"데이터 파싱 오류: {e}") # 이 메시지는 stdout으로 나가므로 제거
-        return None
+        print(f"데이터 파싱 오류: {e}", file=sys.stderr)
+    return None
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         symbol = sys.argv[1]
         stock_name = get_stock_name_from_symbol(symbol)
         if stock_name:
-            print(stock_name)
+            print(json.dumps({"stockName": stock_name}))
         else:
-            print("None") # 종목명을 찾지 못한 경우
+            print(json.dumps({"error": "종목명을 찾을 수 없습니다."}), file=sys.stderr)
     else:
-        print("Usage: python get_stock_info.py <symbol>")
+        print(json.dumps({"error": "종목 코드가 제공되지 않았습니다."}), file=sys.stderr)
