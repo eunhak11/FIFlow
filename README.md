@@ -1,4 +1,4 @@
-# Vive Stock App
+# FIFlow App
 
 주식정보 확인을 위한 Flutter 앱과 Node.js API 서버입니다.
 
