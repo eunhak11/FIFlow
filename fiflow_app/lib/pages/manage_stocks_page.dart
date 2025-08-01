@@ -102,6 +102,93 @@ class _ManageStocksPageState extends State<ManageStocksPage> {
     }
   }
 
+  Future<void> _deleteStock(String symbol) async {
+    final String apiUrl = '$_apiBaseUrl/stock/$symbol';
+    print('=== Delete 버튼 클릭됨 ===');
+    print('삭제할 종목 코드: $symbol');
+    print('API URL: $apiUrl');
+
+    try {
+      print('HTTP DELETE 요청 시작...');
+      final response = await http.delete(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      ).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          print('HTTP 요청 타임아웃');
+          throw Exception('요청 시간 초과');
+        },
+      );
+      print('HTTP 응답 상태 코드: ${response.statusCode}');
+      print('HTTP 응답 본문: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        _showSnackBar(responseData['message'] ?? '주식 삭제 성공!');
+        _fetchStocks(); // 주식 삭제 후 목록 새로고침
+      } else {
+        final Map<String, dynamic> errorData = jsonDecode(response.body);
+        _showSnackBar(errorData['message'] ?? '주식 삭제 실패!');
+      }
+    } catch (e) {
+      _showSnackBar('네트워크 오류: $e');
+    }
+  }
+
+  Future<void> _showDeleteConfirmation(String symbol, String stockName) async {
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text(
+            '주식 삭제',
+            style: TextStyle(
+              fontFamily: 'Montserrat-SemiBold',
+              fontSize: 20,
+            ),
+          ),
+          content: Text(
+            '$stockName ($symbol)을(를) 정말 삭제하시겠습니까?',
+            style: const TextStyle(
+              fontFamily: 'Montserrat-Regular',
+              fontSize: 16,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text(
+                '취소',
+                style: TextStyle(
+                  fontFamily: 'Montserrat-Regular',
+                  fontSize: 16,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text(
+                '삭제',
+                style: TextStyle(
+                  fontFamily: 'Montserrat-SemiBold',
+                  fontSize: 16,
+                  color: Colors.red,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true) {
+      await _deleteStock(symbol);
+    }
+  }
+
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -208,7 +295,7 @@ class _ManageStocksPageState extends State<ManageStocksPage> {
                           IconButton(
                             icon: const Icon(Icons.delete_outline, size: 28),
                             onPressed: () {
-                              // TODO: 주식 삭제 기능 구현
+                              _showDeleteConfirmation(stock['symbol'], stock['name']);
                             },
                           ),
                         ],
