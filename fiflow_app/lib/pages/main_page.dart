@@ -14,7 +14,11 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   List<Map<String, dynamic>> _stocksWithMarketData = [];
+  List<Map<String, dynamic>> _indices = [];
   bool _isLoading = true;
+  bool _isStockCrawlerRunning = false;
+  bool _isIndexCrawlerRunning = false;
+  Set<String> _favoriteStocks = {}; // 즐겨찾기된 주식들의 symbol을 저장
 
   // API 서버 URL 설정
   String get _apiBaseUrl {
@@ -25,6 +29,43 @@ class _MainPageState extends State<MainPage> {
   void initState() {
     super.initState();
     _fetchStocksWithMarketData();
+    _fetchIndices();
+    _startCrawlerStatusPolling();
+  }
+
+  void _startCrawlerStatusPolling() {
+    // 크롤러 상태를 주기적으로 확인
+    Future.delayed(const Duration(seconds: 1), () {
+      _checkCrawlerStatus();
+    });
+  }
+
+  Future<void> _checkCrawlerStatus() async {
+    try {
+      final response = await http.get(Uri.parse('$_apiBaseUrl/crawler/status'));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          _isStockCrawlerRunning = data['stockCrawler'] ?? false;
+          _isIndexCrawlerRunning = data['indexCrawler'] ?? false;
+        });
+        
+        // 크롤러가 실행 중이면 데이터를 다시 가져옴
+        if (_isStockCrawlerRunning || _isIndexCrawlerRunning) {
+          _fetchStocksWithMarketData();
+          _fetchIndices();
+        }
+      }
+    } catch (e) {
+      print('크롤러 상태 확인 오류: $e');
+    }
+    
+    // 2초마다 상태 확인
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        _checkCrawlerStatus();
+      }
+    });
   }
 
   Future<void> _fetchStocksWithMarketData() async {
@@ -49,32 +90,270 @@ class _MainPageState extends State<MainPage> {
     }
   }
 
+  Future<void> _fetchIndices() async {
+    try {
+      final response = await http.get(Uri.parse('$_apiBaseUrl/indices'));
+      
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        setState(() {
+          _indices = data.cast<Map<String, dynamic>>();
+        });
+      }
+    } catch (e) {
+      print('지수 데이터 가져오기 오류: $e');
+    }
+  }
+
+  String _getCurrentDate() {
+    final now = DateTime.now();
+    return '${now.year}.${now.month.toString().padLeft(2, '0')}.${now.day.toString().padLeft(2, '0')}';
+  }
+
+  void _toggleFavorite(String symbol) {
+    setState(() {
+      if (_favoriteStocks.contains(symbol)) {
+        _favoriteStocks.remove(symbol);
+      } else {
+        _favoriteStocks.add(symbol);
+      }
+    });
+    print('즐겨찾기 토글: $symbol (현재 즐겨찾기: ${_favoriteStocks.length}개)');
+  }
+
+  List<Map<String, dynamic>> _getFavoriteStocks() {
+    return _stocksWithMarketData.where((stock) => 
+      _favoriteStocks.contains(stock['symbol'])
+    ).toList();
+  }
+
+  List<Map<String, dynamic>> _getNonFavoriteStocks() {
+    return _stocksWithMarketData.where((stock) => 
+      !_favoriteStocks.contains(stock['symbol'])
+    ).toList();
+  }
+
+  Widget _buildIndicesSection(List<Map<String, dynamic>> indices) {
+    // 지수 크롤러가 실행 중인 경우
+    if (_isIndexCrawlerRunning) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.green[50],
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.green[200]!),
+        ),
+        child: Row(
+          children: [
+            const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Text(
+              '지수 데이터 업데이트 중...',
+              style: TextStyle(
+                fontFamily: 'Montserrat-SemiBold',
+                fontSize: 14,
+                color: Colors.green,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // 지수 데이터가 없는 경우
+    if (indices.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.grey[100],
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const Row(
+          children: [
+            Icon(Icons.info_outline, color: Colors.grey, size: 20),
+            SizedBox(width: 8),
+            Text(
+              '지수 데이터를 불러오는 중...',
+              style: TextStyle(
+                fontFamily: 'Montserrat-Regular',
+                fontSize: 14,
+                color: Colors.grey,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // 정상 지수 데이터 표시
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: indices.map((idx) {
+        return Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  idx['name'] as String,
+                  style: const TextStyle(
+                    fontFamily: 'Montserrat-Regular',
+                    fontSize: 20,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  idx['value'] as String,
+                  style: const TextStyle(
+                    fontFamily: 'Montserrat-SemiBold',
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '${idx['change']} (${idx['changeRate']}%)',
+                  style: TextStyle(
+                    fontFamily: 'Montserrat-Regular',
+                    fontSize: 16,
+                    color: idx['isUp'] == true ? Colors.red : Colors.blue,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildStockListSection() {
+    // 크롤러가 실행 중인 경우
+    if (_isStockCrawlerRunning) {
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.blue[50],
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.blue[200]!),
+        ),
+        child: Row(
+          children: [
+            const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Text(
+              '주식 데이터 업데이트 중...',
+              style: TextStyle(
+                fontFamily: 'Montserrat-SemiBold',
+                fontSize: 16,
+                color: Colors.blue,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // 일반 로딩 상태
+    if (_isLoading) {
+      return const Center(
+        child: Column(
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 12),
+            Text(
+              '데이터를 불러오는 중...',
+              style: TextStyle(
+                fontFamily: 'Montserrat-Regular',
+                fontSize: 16,
+                color: Colors.grey,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // 데이터가 없는 경우
+    if (_stocksWithMarketData.isEmpty) {
+      return const Center(
+        child: Text(
+          '등록된 주식이 없습니다.',
+          style: TextStyle(
+            fontFamily: 'Montserrat-Regular',
+            fontSize: 16,
+            color: Colors.grey,
+          ),
+        ),
+      );
+    }
+
+    // 즐겨찾기된 주식들
+    final favoriteStocks = _getFavoriteStocks();
+    final nonFavoriteStocks = _getNonFavoriteStocks();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 즐겨찾기 섹션 (즐겨찾기가 있을 때만 표시)
+        if (favoriteStocks.isNotEmpty) ...[
+          const Text(
+            '즐겨찾기',
+            style: TextStyle(
+              fontFamily: 'Montserrat-SemiBold',
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          ...favoriteStocks.map((stock) => _StockListItem(
+            stock: stock,
+            favoriteStocks: _favoriteStocks,
+            onToggleFavorite: _toggleFavorite,
+          )).toList(),
+          const SizedBox(height: 24),
+        ],
+        // 나머지 주식들
+        if (nonFavoriteStocks.isNotEmpty) ...[
+          const Text(
+            '전체 주식',
+            style: TextStyle(
+              fontFamily: 'Montserrat-SemiBold',
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          ...nonFavoriteStocks.map((stock) => _StockListItem(
+            stock: stock,
+            favoriteStocks: _favoriteStocks,
+            onToggleFavorite: _toggleFavorite,
+          )).toList(),
+        ],
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    // 더미 데이터 (API에서 데이터를 가져오지 못할 때 사용)
-    final indices = [
-      {
-        'name': 'KOSPI',
-        'value': '3,163.84',
-        'change': '-46.97',
-        'percent': '(1.46%)',
-        'isUp': false
-      },
-      {
-        'name': 'KOSDAQ',
-        'value': '812.29',
-        'change': '-9.41',
-        'percent': '(1.14%)',
-        'isUp': false
-      },
-      {
-        'name': 'S&P500',
-        'value': '6,305.60',
-        'change': '+8.81',
-        'percent': '(0.14%)',
-        'isUp': true
-      },
-    ];
+    // API에서 가져온 지수 데이터 사용 (데이터가 없으면 빈 배열)
+    final List<Map<String, dynamic>> indices = _indices.isNotEmpty ? _indices : [];
 
     final domesticStocks = [
       {
@@ -126,7 +405,7 @@ class _MainPageState extends State<MainPage> {
                         ),
                         SizedBox(height: 2),
                         Text(
-                          '2025.07.22',
+                          _getCurrentDate(),
                           style: TextStyle(
                             fontFamily: 'Montserrat-Regular',
                             fontSize: 30,
@@ -135,70 +414,61 @@ class _MainPageState extends State<MainPage> {
                         ),
                       ],
                     ),
-                    ElevatedButton(
-                      onPressed: widget.onManageStocks,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFE8F5E8), // 연한 초록색 배경
-                        foregroundColor: Colors.black, // 검은색 글자
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4), // 입력란과 같은 둥근 모서리
+                    Column(
+                      children: [
+                        ElevatedButton(
+                          onPressed: widget.onManageStocks,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFE8F5E8), // 연한 초록색 배경
+                            foregroundColor: Colors.black, // 검은색 글자
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(4), // 입력란과 같은 둥근 모서리
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          ),
+                          child: const Text(
+                            'Manage',
+                            style: TextStyle(
+                              fontFamily: 'Montserrat-SemiBold',
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black, // 명시적으로 검은색 지정
+                            ),
+                          ),
                         ),
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      ),
-                      child: const Text(
-                        'Manage',
-                        style: TextStyle(
-                          fontFamily: 'Montserrat-SemiBold',
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black, // 명시적으로 검은색 지정
+                        const SizedBox(height: 8),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              _isLoading = true;
+                            });
+                            _fetchStocksWithMarketData();
+                            _fetchIndices();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFE8F5E8), // 연한 초록색 배경
+                            foregroundColor: Colors.black, // 검은색 글자
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(4), // 입력란과 같은 둥근 모서리
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          ),
+                          child: const Text(
+                            'Refresh',
+                            style: TextStyle(
+                              fontFamily: 'Montserrat-SemiBold',
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black, // 명시적으로 검은색 지정
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ],
                 ),
                 const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: indices.map((idx) {
-                    return Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              idx['name'] as String,
-                              style: const TextStyle(
-                                fontFamily: 'Montserrat-Regular',
-                                fontSize: 20,
-                                color: Colors.black,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              idx['value'] as String,
-                              style: const TextStyle(
-                                fontFamily: 'Montserrat-SemiBold',
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              '${idx['change']}${idx['percent']}',
-                              style: TextStyle(
-                                fontFamily: 'Montserrat-Regular',
-                                fontSize: 16,
-                                color: idx['isUp'] == true ? Colors.red : Colors.blue,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
+                _buildIndicesSection(indices),
                 const SizedBox(height: 16),
                 Container(
                   height: 1,
@@ -214,22 +484,7 @@ class _MainPageState extends State<MainPage> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                _isLoading 
-                  ? const Center(child: CircularProgressIndicator())
-                  : _stocksWithMarketData.isEmpty
-                    ? const Center(
-                        child: Text(
-                          '등록된 주식이 없습니다.',
-                          style: TextStyle(
-                            fontFamily: 'Montserrat-Regular',
-                            fontSize: 16,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      )
-                    : Column(
-                        children: _stocksWithMarketData.map((stock) => _StockListItem(stock: stock)).toList(),
-                      ),
+                _buildStockListSection(),
                 const SizedBox(height: 24),
                 const Text(
                   'foreign',
@@ -259,7 +514,14 @@ class _MainPageState extends State<MainPage> {
 
 class _StockListItem extends StatelessWidget {
   final Map<String, dynamic> stock;
-  const _StockListItem({required this.stock});
+  final Set<String> favoriteStocks;
+  final Function(String) onToggleFavorite;
+  
+  const _StockListItem({
+    required this.stock,
+    required this.favoriteStocks,
+    required this.onToggleFavorite,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -297,74 +559,85 @@ class _StockListItem extends StatelessWidget {
           border: Border.all(color: Colors.grey[300]!, width: 1.2),
           borderRadius: BorderRadius.circular(12),
         ),
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: const BoxDecoration(
-                    color: Colors.black12,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        stock['name'] ?? '알 수 없음',
-                        style: const TextStyle(
-                          fontFamily: 'Montserrat-SemiBold',
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      if (stock['symbol'] != null)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Text(
-                          stock['symbol'],
+                          stock['name'] ?? '알 수 없음',
                           style: const TextStyle(
-                            fontFamily: 'Montserrat-Regular',
-                            fontSize: 14,
-                            color: Colors.grey,
+                            fontFamily: 'Montserrat-SemiBold',
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                    ],
+                        if (stock['symbol'] != null)
+                          Text(
+                            stock['symbol'],
+                            style: const TextStyle(
+                              fontFamily: 'Montserrat-Regular',
+                              fontSize: 14,
+                              color: Colors.grey,
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(width: 16),
-                Container(
-                  constraints: const BoxConstraints(minHeight: 64),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                  const SizedBox(width: 16),
+                  Row(
                     children: [
-                      Text(
-                        priceText,
-                        style: const TextStyle(
-                          fontFamily: 'Montserrat-SemiBold',
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
+                      Container(
+                        constraints: const BoxConstraints(minHeight: 64),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              priceText,
+                              style: const TextStyle(
+                                fontFamily: 'Montserrat-SemiBold',
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              changeText,
+                              style: TextStyle(
+                                fontFamily: 'Montserrat-Regular',
+                                fontSize: 18,
+                                color: changeColor ?? Colors.grey,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        changeText,
-                        style: TextStyle(
-                          fontFamily: 'Montserrat-Regular',
-                          fontSize: 18,
-                          color: changeColor ?? Colors.grey,
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: () {
+                          onToggleFavorite(stock['symbol']);
+                        },
+                        child: Icon(
+                          Icons.star,
+                          size: 24,
+                          color: favoriteStocks.contains(stock['symbol']) 
+                            ? Colors.yellow 
+                            : Colors.grey[400],
                         ),
                       ),
                     ],
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             if (hasMarketData && marketData['foreignerNetBuy'] != null) ...[
               const SizedBox(height: 12),

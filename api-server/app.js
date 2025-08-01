@@ -4,9 +4,10 @@ const PORT = 3000;
 const db = require('./models'); // models/index.js를 로드
 const { spawn } = require('child_process'); // Python 스크립트 실행을 위한 모듈
 
-// 크롤러 실행 함수
+// 주식 크롤러 실행 함수
 function runCrawler() {
-  console.log('=== 크롤러 실행 시작 ===');
+  console.log('=== 주식 크롤러 실행 시작 ===');
+  isStockCrawlerRunning = true;
   
   // Docker 컨테이너 내에서 가상환경의 Python으로 main.py 실행
   const crawlerProcess = spawn('/opt/venv/bin/python', ['crawler/main.py'], {
@@ -30,18 +31,64 @@ function runCrawler() {
   });
 
   crawlerProcess.on('close', (code) => {
+    isStockCrawlerRunning = false;
     if (code === 0) {
-      console.log('=== 크롤러 실행 완료 ===');
+      console.log('=== 주식 크롤러 실행 완료 ===');
       console.log('크롤링 결과:', output);
     } else {
-      console.error('=== 크롤러 실행 실패 ===');
+      console.error('=== 주식 크롤러 실행 실패 ===');
       console.error('종료 코드:', code);
       console.error('오류 출력:', errorOutput);
     }
   });
 
   crawlerProcess.on('error', (error) => {
+    isStockCrawlerRunning = false;
     console.error('크롤러 실행 오류:', error);
+  });
+}
+
+// 지수 크롤러 실행 함수
+function runIndexCrawler() {
+  console.log('=== 지수 크롤러 실행 시작 ===');
+  isIndexCrawlerRunning = true;
+  
+  // Docker 컨테이너 내에서 가상환경의 Python으로 index_crawler.py 실행
+  const crawlerProcess = spawn('/opt/venv/bin/python', ['crawler/index_crawler.py'], {
+    cwd: __dirname,
+    stdio: ['pipe', 'pipe', 'pipe']
+  });
+
+  let output = '';
+  let errorOutput = '';
+
+  crawlerProcess.stdout.on('data', (data) => {
+    const message = data.toString();
+    output += message;
+    console.log('지수 크롤러 출력:', message.trim());
+  });
+
+  crawlerProcess.stderr.on('data', (data) => {
+    const error = data.toString();
+    errorOutput += error;
+    console.error('지수 크롤러 오류:', error.trim());
+  });
+
+  crawlerProcess.on('close', (code) => {
+    isIndexCrawlerRunning = false;
+    if (code === 0) {
+      console.log('=== 지수 크롤러 실행 완료 ===');
+      console.log('지수 크롤링 결과:', output);
+    } else {
+      console.error('=== 지수 크롤러 실행 실패 ===');
+      console.error('종료 코드:', code);
+      console.error('오류 출력:', errorOutput);
+    }
+  });
+
+  crawlerProcess.on('error', (error) => {
+    isIndexCrawlerRunning = false;
+    console.error('지수 크롤러 실행 오류:', error);
   });
 }
 
@@ -305,6 +352,66 @@ app.delete('/stock/:symbol', async (req, res) => {
   }
 });
 
+// 지수 데이터 가져오기 API 엔드포인트
+app.get('/indices', async (req, res) => {
+  try {
+    console.log('=== 지수 데이터 요청 시작 ===');
+    
+    // 최신 지수 데이터를 가져옴 (오늘 날짜 기준)
+    const today = new Date().toISOString().split('T')[0];
+    const indices = await db.IndexData.findAll({
+      where: { date: today },
+      order: [['name', 'ASC']]
+    });
+
+    // 결과 데이터 가공
+    const result = indices.map(index => ({
+      name: index.name,
+      value: parseFloat(index.value).toFixed(2),
+      change: parseFloat(index.change).toFixed(2),
+      changeRate: parseFloat(index.changeRate).toFixed(2),
+      isUp: parseFloat(index.change) > 0
+    }));
+
+    console.log('지수 데이터 조회 성공:', result.length, '개 지수');
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error fetching indices:', error);
+    res.status(500).json({ message: '지수 데이터를 가져오는 데 실패했습니다.' });
+  }
+});
+
+// 크롤러 상태 변수
+let isStockCrawlerRunning = false;
+let isIndexCrawlerRunning = false;
+
+// 크롤러 상태 확인 API 엔드포인트
+app.get('/crawler/status', (req, res) => {
+  res.status(200).json({
+    stockCrawler: isStockCrawlerRunning,
+    indexCrawler: isIndexCrawlerRunning
+  });
+});
+
+// 지수 크롤러 실행 API 엔드포인트
+app.post('/indices/crawl', async (req, res) => {
+  try {
+    console.log('=== 지수 크롤러 실행 요청 ===');
+    
+    // 비동기로 지수 크롤러 실행 (API 응답 지연 방지)
+    setTimeout(() => {
+      runIndexCrawler();
+    }, 100);
+    
+    res.status(200).json({ 
+      message: '지수 크롤러가 실행되었습니다. 잠시 후 /indices API로 최신 데이터를 확인하세요.' 
+    });
+  } catch (error) {
+    console.error('지수 크롤러 실행 오류:', error);
+    res.status(500).json({ message: '지수 크롤러 실행 중 오류가 발생했습니다.' });
+  }
+});
+
 // 데이터베이스 연결 테스트 및 동기화 (재시도 로직 추가)
 const connectWithRetry = async () => {
   try {
@@ -312,6 +419,18 @@ const connectWithRetry = async () => {
     console.log('Database connected successfully');
     app.listen(PORT, () => {
       console.log(`Server listening on port ${PORT}`);
+      
+      // 서버 시작 후 자동으로 크롤러 실행
+      console.log('=== 서버 시작: 자동 크롤러 실행 ===');
+      setTimeout(() => {
+        console.log('주식 크롤러 자동 실행...');
+        runCrawler();
+        
+        setTimeout(() => {
+          console.log('지수 크롤러 자동 실행...');
+          runIndexCrawler();
+        }, 1000); // 주식 크롤러 완료 후 1초 뒤 지수 크롤러 실행
+      }, 2000); // 서버 시작 후 2초 뒤 크롤러 실행
     });
   } catch (err) {
     console.error('Unable to connect to the database:', err);

@@ -9,7 +9,7 @@ import json
 DB_CONFIG = {
     'user': 'fiflowuser',
     'password': 'fiflowpw',
-    'host': 'db',
+    'host': 'db',  # Docker 컨테이너 내에서 실행되므로 db 서비스명 사용
     'database': 'fiflow',
     'raise_on_warnings': True
 }
@@ -22,11 +22,11 @@ def save_index_data(data):
         
         query = """
         INSERT INTO IndexData (name, value, `change`, changeRate, date, createdAt, updatedAt)
-        VALUES (%(name)s, %(value)s, %(change)s, %(changeRate)s, %(date)s, NOW(), NOW())
+        VALUES (%(name)s, %(value)s, %(change)s, %(changeRate)s, %(date)s, NOW(), NOW()) AS new_data
         ON DUPLICATE KEY UPDATE
-        value = value,
-        `change` = `change`,
-        changeRate = changeRate,
+        value = new_data.value,
+        `change` = new_data.change,
+        changeRate = new_data.changeRate,
         updatedAt = NOW();
         """
         
@@ -39,7 +39,7 @@ def save_index_data(data):
         print(f"데이터베이스 저장 오류: {err}")
 
 def get_index_data():
-    """네이버 금융에서 주요 지수 정보를 크롤링합니다."""
+    """네이버 금융에서 국내 지수 데이터를 가져옵니다."""
     url = "https://polling.finance.naver.com/api/realtime?query=SERVICE_INDEX:KOSPI,KOSDAQ,KPI200"
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
