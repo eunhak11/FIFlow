@@ -1,13 +1,57 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:intl/intl.dart';
 
-class MainPage extends StatelessWidget {
+class MainPage extends StatefulWidget {
   const MainPage({Key? key, required this.onManageStocks}) : super(key: key);
 
   final VoidCallback onManageStocks;
 
   @override
+  State<MainPage> createState() => _MainPageState();
+}
+
+class _MainPageState extends State<MainPage> {
+  List<Map<String, dynamic>> _stocksWithMarketData = [];
+  bool _isLoading = true;
+
+  // API 서버 URL 설정
+  String get _apiBaseUrl {
+    return 'http://localhost:3000'; // 로컬 개발용
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchStocksWithMarketData();
+  }
+
+  Future<void> _fetchStocksWithMarketData() async {
+    try {
+      final response = await http.get(Uri.parse('$_apiBaseUrl/stocks/marketdata'));
+      
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        setState(() {
+          _stocksWithMarketData = data.cast<Map<String, dynamic>>();
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // 더미 데이터
+    // 더미 데이터 (API에서 데이터를 가져오지 못할 때 사용)
     final indices = [
       {
         'name': 'KOSPI',
@@ -92,7 +136,7 @@ class MainPage extends StatelessWidget {
                       ],
                     ),
                     OutlinedButton(
-                      onPressed: onManageStocks,
+                      onPressed: widget.onManageStocks,
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Colors.black12),
                         backgroundColor: Colors.white,
@@ -169,7 +213,22 @@ class MainPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-                ...domesticStocks.map((stock) => _StockListItem(stock: stock)).toList(),
+                _isLoading 
+                  ? const Center(child: CircularProgressIndicator())
+                  : _stocksWithMarketData.isEmpty
+                    ? const Center(
+                        child: Text(
+                          '등록된 주식이 없습니다.',
+                          style: TextStyle(
+                            fontFamily: 'Montserrat-Regular',
+                            fontSize: 16,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      )
+                    : Column(
+                        children: _stocksWithMarketData.map((stock) => _StockListItem(stock: stock)).toList(),
+                      ),
                 const SizedBox(height: 24),
                 const Text(
                   'foreign',
@@ -203,6 +262,33 @@ class _StockListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final marketData = stock['marketData'];
+    final hasMarketData = marketData != null;
+    
+    // 가격과 변동 정보 처리
+    String priceText = '데이터 없음';
+    String changeText = '';
+    Color? changeColor;
+    
+    if (hasMarketData) {
+      final price = marketData['price'];
+      final change = marketData['change'];
+      final changeRate = marketData['changeRate'];
+      
+      if (price != null) {
+        final formatter = NumberFormat('#,###');
+        priceText = '${formatter.format(price)}원';
+      }
+      
+      if (change != null && changeRate != null) {
+        final formatter = NumberFormat('#,###');
+        final changeValue = change > 0 ? '+${formatter.format(change)}' : formatter.format(change);
+        final rateValue = changeRate > 0 ? '+$changeRate' : changeRate.toString();
+        changeText = '$changeValue ($rateValue%)';
+        changeColor = change > 0 ? Colors.red : change < 0 ? Colors.blue : Colors.grey;
+      }
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12.0),
       child: Container(
@@ -227,13 +313,27 @@ class _StockListItem extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Text(
-                    stock['name'],
-                    style: const TextStyle(
-                      fontFamily: 'Montserrat-SemiBold',
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        stock['name'] ?? '알 수 없음',
+                        style: const TextStyle(
+                          fontFamily: 'Montserrat-SemiBold',
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      if (stock['symbol'] != null)
+                        Text(
+                          stock['symbol'],
+                          style: const TextStyle(
+                            fontFamily: 'Montserrat-Regular',
+                            fontSize: 14,
+                            color: Colors.grey,
+                          ),
+                        ),
+                    ],
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -244,7 +344,7 @@ class _StockListItem extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        stock['price'],
+                        priceText,
                         style: const TextStyle(
                           fontFamily: 'Montserrat-SemiBold',
                           fontSize: 22,
@@ -253,15 +353,11 @@ class _StockListItem extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        stock['change'],
+                        changeText,
                         style: TextStyle(
                           fontFamily: 'Montserrat-Regular',
                           fontSize: 18,
-                          color: stock['isUp'] == null
-                              ? Colors.grey
-                              : stock['isUp']
-                                  ? Colors.red
-                                  : Colors.blue,
+                          color: changeColor ?? Colors.grey,
                         ),
                       ),
                     ],
@@ -269,86 +365,104 @@ class _StockListItem extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            Column(
-              children: [
-                Row(
-                  children: List.generate(4, (i) {
-                    return Expanded(
-                      child: SizedBox(
-                        height: 56,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(
-                              '07.${21 - i}',
-                              textAlign: TextAlign.center,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontFamily: 'Montserrat-Regular',
-                                fontSize: 14,
-                                color: Colors.grey,
+            if (hasMarketData && marketData['foreignerNetBuy'] != null) ...[
+              const SizedBox(height: 12),
+              Column(
+                children: [
+                  Row(
+                    children: List.generate(4, (i) {
+                      final foreignerData = marketData['foreignerNetBuy'][i];
+                      final date = foreignerData?['date'];
+                      final netBuy = foreignerData?['net_buy'];
+                      
+                      return Expanded(
+                        child: SizedBox(
+                          height: 56,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                date ?? '-',
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontFamily: 'Montserrat-Regular',
+                                  fontSize: 14,
+                                  color: Colors.grey,
+                                ),
                               ),
-                            ),
-                            Text(
-                              stock['history'][i],
-                              textAlign: TextAlign.center,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontFamily: 'Montserrat-SemiBold',
-                                fontSize: 16,
-                                color: stock['history'][i].startsWith('+') ? Colors.red : Colors.blue,
+                              Text(
+                                netBuy != null 
+                                  ? (netBuy > 0 ? '+${NumberFormat('#,###').format(netBuy)}' : NumberFormat('#,###').format(netBuy))
+                                  : '-',
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontFamily: 'Montserrat-SemiBold',
+                                  fontSize: 16,
+                                  color: netBuy != null 
+                                    ? (netBuy > 0 ? Colors.red : Colors.blue)
+                                    : Colors.grey,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                  }),
-                ),
-                const SizedBox(height: 2),
-                Row(
-                  children: List.generate(4, (i) {
-                    return Expanded(
-                      child: SizedBox(
-                        height: 56,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(
-                              '07.${17 - i}',
-                              textAlign: TextAlign.center,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontFamily: 'Montserrat-Regular',
-                                fontSize: 14,
-                                color: Colors.grey,
+                      );
+                    }),
+                  ),
+                  const SizedBox(height: 2),
+                  Row(
+                    children: List.generate(4, (i) {
+                      final foreignerData = marketData['foreignerNetBuy'][i + 4];
+                      final date = foreignerData?['date'];
+                      final netBuy = foreignerData?['net_buy'];
+                      
+                      return Expanded(
+                        child: SizedBox(
+                          height: 56,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                date ?? '-',
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontFamily: 'Montserrat-Regular',
+                                  fontSize: 14,
+                                  color: Colors.grey,
+                                ),
                               ),
-                            ),
-                            Text(
-                              stock['history'][i + 4],
-                              textAlign: TextAlign.center,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontFamily: 'Montserrat-SemiBold',
-                                fontSize: 16,
-                                color: stock['history'][i + 4].startsWith('+') ? Colors.red : Colors.blue,
+                              Text(
+                                netBuy != null 
+                                  ? (netBuy > 0 ? '+${NumberFormat('#,###').format(netBuy)}' : NumberFormat('#,###').format(netBuy))
+                                  : '-',
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontFamily: 'Montserrat-SemiBold',
+                                  fontSize: 16,
+                                  color: netBuy != null 
+                                    ? (netBuy > 0 ? Colors.red : Colors.blue)
+                                    : Colors.grey,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                  }),
-                ),
-              ],
-            ),
+                      );
+                    }),
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
       ),

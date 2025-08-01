@@ -10,7 +10,7 @@ import mysql.connector
 DB_CONFIG = {
     'user': 'fiflowuser',
     'password': 'fiflowpw',
-    'host': 'db',
+    'host': 'localhost',
     'database': 'fiflow',
     'raise_on_warnings': True
 }
@@ -20,7 +20,7 @@ def get_stocks_from_db(cnx):
     stocks = []
     try:
         cursor = cnx.cursor()
-        query = "SELECT symbol, name FROM stocks"
+        query = "SELECT symbol, name FROM Stocks"
         cursor.execute(query)
         stocks = cursor.fetchall()
         cursor.close()
@@ -128,27 +128,28 @@ def save_market_data(cnx, data):
         query = ("""
         INSERT INTO MarketData (symbol, date, price, `change`, changeRate, stockName, foreignerNetBuy1, foreignerNetBuy2, foreignerNetBuy3, foreignerNetBuy4, foreignerNetBuy5, foreignerNetBuy6, foreignerNetBuy7, foreignerNetBuy8, foreignerNetBuyDate1, foreignerNetBuyDate2, foreignerNetBuyDate3, foreignerNetBuyDate4, foreignerNetBuyDate5, foreignerNetBuyDate6, foreignerNetBuyDate7, foreignerNetBuyDate8, createdAt, updatedAt)
         VALUES (%(symbol)s, %(date)s, %(price)s, %(change)s, %(changeRate)s, %(stockName)s, %(foreignerNetBuy1)s, %(foreignerNetBuy2)s, %(foreignerNetBuy3)s, %(foreignerNetBuy4)s, %(foreignerNetBuy5)s, %(foreignerNetBuy6)s, %(foreignerNetBuy7)s, %(foreignerNetBuy8)s, %(foreignerNetBuyDate1)s, %(foreignerNetBuyDate2)s, %(foreignerNetBuyDate3)s, %(foreignerNetBuyDate4)s, %(foreignerNetBuyDate5)s, %(foreignerNetBuyDate6)s, %(foreignerNetBuyDate7)s, %(foreignerNetBuyDate8)s, NOW(), NOW())
+        AS new_data
         ON DUPLICATE KEY UPDATE
-        price = VALUES(price),
-        `change` = VALUES(`change`),
-        changeRate = VALUES(changeRate),
-        stockName = VALUES(stockName),
-        foreignerNetBuy1 = VALUES(foreignerNetBuy1),
-        foreignerNetBuy2 = VALUES(foreignerNetBuy2),
-        foreignerNetBuy3 = VALUES(foreignerNetBuy3),
-        foreignerNetBuy4 = VALUES(foreignerNetBuy4),
-        foreignerNetBuy5 = VALUES(foreignerNetBuy5),
-        foreignerNetBuy6 = VALUES(foreignerNetBuy6),
-        foreignerNetBuy7 = VALUES(foreignerNetBuy7),
-        foreignerNetBuy8 = VALUES(foreignerNetBuy8),
-        foreignerNetBuyDate1 = VALUES(foreignerNetBuyDate1),
-        foreignerNetBuyDate2 = VALUES(foreignerNetBuyDate2),
-        foreignerNetBuyDate3 = VALUES(foreignerNetBuyDate3),
-        foreignerNetBuyDate4 = VALUES(foreignerNetBuyDate4),
-        foreignerNetBuyDate5 = VALUES(foreignerNetBuyDate5),
-        foreignerNetBuyDate6 = VALUES(foreignerNetBuyDate6),
-        foreignerNetBuyDate7 = VALUES(foreignerNetBuyDate7),
-        foreignerNetBuyDate8 = VALUES(foreignerNetBuyDate8),
+        price = new_data.price,
+        `change` = new_data.`change`,
+        changeRate = new_data.changeRate,
+        stockName = new_data.stockName,
+        foreignerNetBuy1 = new_data.foreignerNetBuy1,
+        foreignerNetBuy2 = new_data.foreignerNetBuy2,
+        foreignerNetBuy3 = new_data.foreignerNetBuy3,
+        foreignerNetBuy4 = new_data.foreignerNetBuy4,
+        foreignerNetBuy5 = new_data.foreignerNetBuy5,
+        foreignerNetBuy6 = new_data.foreignerNetBuy6,
+        foreignerNetBuy7 = new_data.foreignerNetBuy7,
+        foreignerNetBuy8 = new_data.foreignerNetBuy8,
+        foreignerNetBuyDate1 = new_data.foreignerNetBuyDate1,
+        foreignerNetBuyDate2 = new_data.foreignerNetBuyDate2,
+        foreignerNetBuyDate3 = new_data.foreignerNetBuyDate3,
+        foreignerNetBuyDate4 = new_data.foreignerNetBuyDate4,
+        foreignerNetBuyDate5 = new_data.foreignerNetBuyDate5,
+        foreignerNetBuyDate6 = new_data.foreignerNetBuyDate6,
+        foreignerNetBuyDate7 = new_data.foreignerNetBuyDate7,
+        foreignerNetBuyDate8 = new_data.foreignerNetBuyDate8,
         updatedAt = NOW();
         """)
         
@@ -188,7 +189,11 @@ def main():
                 market_data['stockName'] = actual_stock_name
                 for i, data_item in enumerate(foreigner_data, 1):
                     market_data[f'foreignerNetBuy{i}'] = data_item['net_buy']
-                    market_data[f'foreignerNetBuyDate{i}'] = data_item['date']
+                    # 날짜 형식을 MySQL 표준 형식으로 변환 (. -> -)
+                    date_str = data_item['date']
+                    if date_str and '.' in date_str:
+                        date_str = date_str.replace('.', '-')
+                    market_data[f'foreignerNetBuyDate{i}'] = date_str
                 
                 print("크롤링 데이터:", market_data)
                 save_market_data(cnx, market_data)
