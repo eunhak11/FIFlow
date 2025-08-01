@@ -37,6 +37,59 @@ app.get('/stocks', async (req, res) => {
   }
 });
 
+// Stocks와 MarketData를 조인해서 가져오는 API 엔드포인트
+app.get('/stocks/marketdata', async (req, res) => {
+  try {
+    console.log('=== Stocks MarketData 요청 시작 ===');
+    
+    const stocksWithMarketData = await db.stock.findAll({
+      include: [{
+        model: db.MarketData,
+        as: 'marketData',
+        required: false, // LEFT JOIN
+        order: [['date', 'DESC']], // 최신 데이터부터
+        limit: 1 // 각 주식당 최신 데이터 1개만
+      }]
+    });
+
+    // 결과 데이터 가공
+    const result = stocksWithMarketData.map(stock => {
+      const marketData = stock.marketData && stock.marketData.length > 0 
+        ? stock.marketData[0] 
+        : null;
+
+      return {
+        id: stock.id,
+        symbol: stock.symbol,
+        name: stock.name,
+        userId: stock.userId,
+        marketData: marketData ? {
+          price: marketData.price,
+          change: marketData.change,
+          changeRate: marketData.changeRate,
+          date: marketData.date,
+          foreignerNetBuy: [
+            { date: marketData.foreignerNetBuyDate1, net_buy: marketData.foreignerNetBuy1 },
+            { date: marketData.foreignerNetBuyDate2, net_buy: marketData.foreignerNetBuy2 },
+            { date: marketData.foreignerNetBuyDate3, net_buy: marketData.foreignerNetBuy3 },
+            { date: marketData.foreignerNetBuyDate4, net_buy: marketData.foreignerNetBuy4 },
+            { date: marketData.foreignerNetBuyDate5, net_buy: marketData.foreignerNetBuy5 },
+            { date: marketData.foreignerNetBuyDate6, net_buy: marketData.foreignerNetBuy6 },
+            { date: marketData.foreignerNetBuyDate7, net_buy: marketData.foreignerNetBuy7 },
+            { date: marketData.foreignerNetBuyDate8, net_buy: marketData.foreignerNetBuy8 }
+          ].filter(item => item.date) // 날짜가 있는 데이터만 필터링
+        } : null
+      };
+    });
+
+    console.log('Stocks MarketData 조회 성공:', result.length, '개 주식');
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error fetching stocks market data:', error);
+    res.status(500).json({ message: '주식 시장 데이터를 가져오는 데 실패했습니다.' });
+  }
+});
+
 // 종목 추가 API 엔드포인트
 app.post('/stock/add', async (req, res) => {
   const { symbol } = req.body;

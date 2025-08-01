@@ -14,6 +14,13 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'userId',
         as: 'user'
       });
+      
+      // Stock has many MarketData
+      Stock.hasMany(models.MarketData, {
+        foreignKey: 'symbol',
+        sourceKey: 'symbol',
+        as: 'marketData'
+      });
     }
   }
   Stock.init({

@@ -9,21 +9,21 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   MarketData.init({
-    symbol: DataTypes.STRING,
-    date: DataTypes.DATEONLY,
-    price: DataTypes.INTEGER,
-    change: DataTypes.INTEGER,
-    changeRate: DataTypes.FLOAT, // 데이터 타입 FLOAT으로 변경
-    stockName: DataTypes.STRING, // main.py에서 추가된 필드
-    foreignerNetBuy1: DataTypes.INTEGER,
-    foreignerNetBuy2: DataTypes.INTEGER,
-    foreignerNetBuy3: DataTypes.INTEGER,
+    symbol: DataTypes.STRING, // 종목 코드
+    date: DataTypes.DATEONLY, // 날짜
+    price: DataTypes.INTEGER, // 종가
+    change: DataTypes.INTEGER, // 전일대비
+    changeRate: DataTypes.FLOAT, // 등락률
+    stockName: DataTypes.STRING, // 종목명
+    foreignerNetBuy1: DataTypes.INTEGER, 
+    foreignerNetBuy2: DataTypes.INTEGER, 
+    foreignerNetBuy3: DataTypes.INTEGER, 
     foreignerNetBuy4: DataTypes.INTEGER,
     foreignerNetBuy5: DataTypes.INTEGER,
     foreignerNetBuy6: DataTypes.INTEGER,
     foreignerNetBuy7: DataTypes.INTEGER,
     foreignerNetBuy8: DataTypes.INTEGER,
-    foreignerNetBuyDate1: DataTypes.DATEONLY, // 날짜 컬럼 추가
+    foreignerNetBuyDate1: DataTypes.DATEONLY,
     foreignerNetBuyDate2: DataTypes.DATEONLY,
     foreignerNetBuyDate3: DataTypes.DATEONLY,
     foreignerNetBuyDate4: DataTypes.DATEONLY,
