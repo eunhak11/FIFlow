@@ -5,10 +5,10 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     // users 테이블에 nickname 컬럼 추가
-    await queryInterface.addColumn('Users', 'nickname', { 
-      type: Sequelize.STRING,
-      allowNull: true
-    });
+    // await queryInterface.addColumn('Users', 'nickname', { 
+    //   type: Sequelize.STRING,
+    //   allowNull: true
+    // });
   },
 
   async down(queryInterface, Sequelize) {
