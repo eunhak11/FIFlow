@@ -6,11 +6,11 @@ import datetime
 import re
 import mysql.connector
 
-# 데이터베이스 연결 정보 (config/config.json 기반)
+# 데이터베이스 연결 정보 (Docker 환경)
 DB_CONFIG = {
     'user': 'fiflowuser',
     'password': 'fiflowpw',
-    'host': 'localhost',
+    'host': 'db',  # Docker 컨테이너 내부에서는 서비스명 사용
     'database': 'fiflow',
     'raise_on_warnings': True
 }
