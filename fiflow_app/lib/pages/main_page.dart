@@ -135,22 +135,23 @@ class _MainPageState extends State<MainPage> {
                         ),
                       ],
                     ),
-                    OutlinedButton(
+                    ElevatedButton(
                       onPressed: widget.onManageStocks,
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Colors.black12),
-                        backgroundColor: Colors.white,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFE8F5E8), // 연한 초록색 배경
+                        foregroundColor: Colors.black, // 검은색 글자
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(4), // 입력란과 같은 둥근 모서리
                         ),
                         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                       ),
                       child: const Text(
                         'Manage',
                         style: TextStyle(
-                          fontFamily: 'Montserrat-Regular',
+                          fontFamily: 'Montserrat-SemiBold',
                           fontSize: 18,
-                          color: Colors.black,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black, // 명시적으로 검은색 지정
                         ),
                       ),
                     ),

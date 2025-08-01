@@ -253,12 +253,18 @@ class _ManageStocksPageState extends State<ManageStocksPage> {
                     onPressed: _addStock,
                     style: ElevatedButton.styleFrom(
                       minimumSize: const Size(80, 48),
+                      backgroundColor: const Color(0xFFE8F5E8), // 연한 초록색 배경
+                      foregroundColor: Colors.black, // 검은색 글자
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4), // 입력란과 같은 둥근 모서리
+                      ),
                     ),
                     child: const Text(
                       'Add',
                       style: TextStyle(
                         fontFamily: 'Montserrat-SemiBold',
                         fontSize: 18,
+                        color: Colors.black, // 명시적으로 검은색 지정
                       ),
                     ),
                   ),
@@ -274,13 +280,15 @@ class _ManageStocksPageState extends State<ManageStocksPage> {
                 ),
               ),
               const SizedBox(height: 12),
-              Expanded(
+              Container(
+                height: MediaQuery.of(context).size.height * 0.6, // 화면 높이의 60% 사용
                 child: ListView.builder(
+                  padding: const EdgeInsets.all(16),
                   itemCount: _stocks.length,
                   itemBuilder: (context, index) {
                     final stock = _stocks[index];
                     return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 6.0),
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: Row(
                         children: [
                           Expanded(
@@ -304,7 +312,6 @@ class _ManageStocksPageState extends State<ManageStocksPage> {
                   },
                 ),
               ),
-              const Spacer(),
             ],
           ),
         ),
