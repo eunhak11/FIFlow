@@ -4,6 +4,47 @@ const PORT = 3000;
 const db = require('./models'); // models/index.js를 로드
 const { spawn } = require('child_process'); // Python 스크립트 실행을 위한 모듈
 
+// 크롤러 실행 함수
+function runCrawler() {
+  console.log('=== 크롤러 실행 시작 ===');
+  
+  // Docker 컨테이너 내에서 가상환경의 Python으로 main.py 실행
+  const crawlerProcess = spawn('/opt/venv/bin/python', ['crawler/main.py'], {
+    cwd: __dirname,
+    stdio: ['pipe', 'pipe', 'pipe']
+  });
+
+  let output = '';
+  let errorOutput = '';
+
+  crawlerProcess.stdout.on('data', (data) => {
+    const message = data.toString();
+    output += message;
+    console.log('크롤러 출력:', message.trim());
+  });
+
+  crawlerProcess.stderr.on('data', (data) => {
+    const error = data.toString();
+    errorOutput += error;
+    console.error('크롤러 오류:', error.trim());
+  });
+
+  crawlerProcess.on('close', (code) => {
+    if (code === 0) {
+      console.log('=== 크롤러 실행 완료 ===');
+      console.log('크롤링 결과:', output);
+    } else {
+      console.error('=== 크롤러 실행 실패 ===');
+      console.error('종료 코드:', code);
+      console.error('오류 출력:', errorOutput);
+    }
+  });
+
+  crawlerProcess.on('error', (error) => {
+    console.error('크롤러 실행 오류:', error);
+  });
+}
+
 // CORS 설정 추가
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
@@ -134,7 +175,19 @@ app.post('/stock/add', async (req, res) => {
             });
 
             if (created) {
-              res.status(200).json({ message: '주식 정보가 성공적으로 추가되었습니다.', stockName: stock.name, symbol: stock.symbol });
+              // 주식 추가 성공 후 자동으로 크롤러 실행
+              console.log(`새 주식 추가됨: ${symbol} (${fetchedStockName}). 크롤러를 실행합니다...`);
+              
+              // 비동기로 크롤러 실행 (API 응답 지연 방지)
+              setTimeout(() => {
+                runCrawler();
+              }, 1000); // 1초 후 실행
+              
+              res.status(200).json({ 
+                message: '주식 정보가 성공적으로 추가되었습니다. 크롤러가 실행되어 시장 데이터를 수집합니다.', 
+                stockName: stock.name, 
+                symbol: stock.symbol 
+              });
             } else {
               res.status(200).json({ message: '이미 존재하는 종목입니다.', stockName: stock.name, symbol: stock.symbol });
             }
@@ -200,22 +253,48 @@ app.delete('/stock/:symbol', async (req, res) => {
   console.log('삭제할 종목 코드:', symbol);
 
   try {
-    const deletedCount = await db.stock.destroy({
-      where: { symbol: symbol }
-    });
+    // 트랜잭션 시작
+    const transaction = await db.sequelize.transaction();
 
-    if (deletedCount > 0) {
-      console.log('주식 삭제 성공:', symbol);
-      res.status(200).json({ 
-        message: '주식이 성공적으로 삭제되었습니다.',
-        symbol: symbol 
+    try {
+      // 1. 먼저 관련된 MarketData 삭제
+      const deletedMarketDataCount = await db.MarketData.destroy({
+        where: { symbol: symbol },
+        transaction: transaction
       });
-    } else {
-      console.log('삭제할 주식을 찾을 수 없음:', symbol);
-      res.status(404).json({ 
-        message: '삭제할 주식을 찾을 수 없습니다.',
-        symbol: symbol 
+      console.log(`관련 MarketData 삭제: ${deletedMarketDataCount}개 레코드`);
+
+      // 2. 그 다음 Stocks 삭제
+      const deletedStockCount = await db.stock.destroy({
+        where: { symbol: symbol },
+        transaction: transaction
       });
+
+      if (deletedStockCount > 0) {
+        // 트랜잭션 커밋
+        await transaction.commit();
+        
+        console.log('주식 및 관련 데이터 삭제 성공:', symbol);
+        res.status(200).json({ 
+          message: '주식과 관련된 모든 데이터가 성공적으로 삭제되었습니다.',
+          symbol: symbol,
+          deletedStockCount: deletedStockCount,
+          deletedMarketDataCount: deletedMarketDataCount
+        });
+      } else {
+        // 트랜잭션 롤백
+        await transaction.rollback();
+        
+        console.log('삭제할 주식을 찾을 수 없음:', symbol);
+        res.status(404).json({ 
+          message: '삭제할 주식을 찾을 수 없습니다.',
+          symbol: symbol 
+        });
+      }
+    } catch (error) {
+      // 트랜잭션 롤백
+      await transaction.rollback();
+      throw error;
     }
   } catch (error) {
     console.error('주식 삭제 오류:', error);
