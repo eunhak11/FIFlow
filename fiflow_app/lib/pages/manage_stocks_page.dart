@@ -212,7 +212,7 @@ class _ManageStocksPageState extends State<ManageStocksPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    'Stocks',
+                    'My Stocks',
                     style: TextStyle(
                       fontFamily: 'Montserrat-SemiBold',
                       fontSize: 36,
@@ -232,7 +232,7 @@ class _ManageStocksPageState extends State<ManageStocksPage> {
                     child: TextField(
                       controller: _stockCodeController,
                       decoration: const InputDecoration(
-                        hintText: 'Add with name or code',
+                        hintText: 'Add with code',
                         hintStyle: TextStyle(
                           fontFamily: 'Montserrat-Regular',
                           fontSize: 16,
