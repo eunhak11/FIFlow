@@ -26,6 +26,16 @@ fiflow_app/.pub/
 fiflow_app/build/
 fiflow_app/ios/Pods/
 
+# Build files and reports
+**/build/
+**/build/reports/
+**/build/reports/problems/
+**/build/reports/problems/problems-report.html
+**/android/build/
+**/android/build/reports/
+**/android/build/reports/problems/
+**/android/build/reports/problems/problems-report.html
+
 # IDE
 .vscode/
 .idea/
