@@ -6,6 +6,7 @@ import 'pages/main_page.dart';
 import 'pages/manage_stocks_page.dart';
 import 'pages/login_page.dart';
 import 'services/auth_service.dart';
+import 'widgets/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,17 +34,22 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   bool _showManageStocks = false;
   bool _isLoggedIn = false;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _checkLoginStatus();
+    _initializeApp();
   }
 
-  Future<void> _checkLoginStatus() async {
+  Future<void> _initializeApp() async {
+    // 스플래시 화면을 2초간 표시
+    await Future.delayed(const Duration(seconds: 2));
+    
     final isLoggedIn = await AuthService.isLoggedIn();
     setState(() {
       _isLoggedIn = isLoggedIn;
+      _isLoading = false;
     });
   }
 
@@ -71,12 +77,16 @@ class _MyAppState extends State<MyApp> {
       title: 'FIFlow',
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        fontFamily: 'Montserrat-Regular',
+        scaffoldBackgroundColor: const Color(0xFF34699A),
       ),
-      home: _isLoggedIn
-          ? (_showManageStocks
-              ? ManageStocksPage(onBack: _goToMainPage)
-              : MainPage(onManageStocks: _goToManageStocks))
-          : LoginPage(onLoginSuccess: _onLoginSuccess),
+      home: _isLoading
+          ? const SplashScreen()
+          : _isLoggedIn
+              ? (_showManageStocks
+                  ? ManageStocksPage(onBack: _goToMainPage)
+                  : MainPage(onManageStocks: _goToManageStocks))
+              : LoginPage(onLoginSuccess: _onLoginSuccess),
     );
   }
 } 

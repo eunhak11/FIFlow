@@ -79,35 +79,75 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              'FIFlow',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: Colors.blue,
+      backgroundColor: const Color(0xFF34699A),
+      body: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 40),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                                 // ic_launcher 이미지
+                 Container(
+                   width: 120,
+                   height: 120,
+                   child: Image.asset(
+                     'assets/ic_launcher.png',
+                     width: 120,
+                     height: 120,
+                     fit: BoxFit.cover,
+                   ),
+                 ),
+                 const SizedBox(height: 80),
+                 
+                 // 로그인 버튼
+                if (_isLoading)
+                  const CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50)),
+                  )
+                else
+                  GestureDetector(
+                    onTap: _handleKakaoLogin,
+                    child: Container(
+                      width: 70,
+                      height: 70,
+                                decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            color: Colors.transparent,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3),
+                blurRadius: 10,
+                spreadRadius: 1,
+                offset: const Offset(0, 4),
               ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.asset(
+              'assets/images/kakao_login.png',
+              width: 54,
+              height: 54,
+              fit: BoxFit.cover,
             ),
-            const SizedBox(height: 50),
-            if (_isLoading)
-              const CircularProgressIndicator()
-            else
-              ElevatedButton(
-                onPressed: _handleKakaoLogin,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFEE500),
-                  foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                ),
-                child: const Text(
-                  '카카오로 로그인',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ),
-          ],
+          ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  // 로그인 안내 텍스트
+                  const Text(
+                    '카카오로 로그인하세요.',
+                    style: TextStyle(
+                      fontFamily: 'Montserrat-Regular',
+                      fontSize: 14,
+                      color: Colors.white,
+                    ),
+                  ),
+              ],
+            ),
+          ),
         ),
       ),
     );
