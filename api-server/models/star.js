@@ -7,10 +7,17 @@ module.exports = (sequelize, DataTypes) => {
       primaryKey: true,
       autoIncrement: true
     },
-    symbol: {
-      type: DataTypes.STRING,
+    userId: {
+      type: DataTypes.INTEGER,
       allowNull: false,
-      unique: true
+      references: {
+        model: 'Users',
+        key: 'id'
+      }
+    },
+    symbol: {
+      type: DataTypes.STRING(20),
+      allowNull: false
     },
     createdAt: {
       type: DataTypes.DATE,
@@ -24,8 +31,22 @@ module.exports = (sequelize, DataTypes) => {
     }
   }, {
     tableName: 'Stars',
-    timestamps: true
+    timestamps: true,
+    indexes: [
+      {
+        unique: true,
+        fields: ['userId', 'symbol']
+      }
+    ]
   });
+
+  // User와의 관계 설정
+  Star.associate = function(models) {
+    Star.belongsTo(models.User, {
+      foreignKey: 'userId',
+      as: 'user'
+    });
+  };
 
   return Star;
 }; 

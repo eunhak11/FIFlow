@@ -110,6 +110,34 @@ class _MainPageState extends State<MainPage> {
     return '${now.year}.${now.month.toString().padLeft(2, '0')}.${now.day.toString().padLeft(2, '0')}';
   }
 
+  String _formatNumber(String value) {
+    try {
+      // 숫자로 파싱
+      final number = double.parse(value);
+      // 3자리마다 쉼표 추가
+      final formatter = NumberFormat('#,###.##');
+      return formatter.format(number);
+    } catch (e) {
+      return value; // 파싱 실패시 원본 반환
+    }
+  }
+
+  String _formatDate(String? dateString) {
+    if (dateString == null || dateString.isEmpty) return '-';
+    
+    try {
+      // 2025-08-01 형식을 DateTime으로 파싱
+      final date = DateTime.parse(dateString);
+      // 25.08.01 형식으로 변환
+      final year = date.year.toString().substring(2); // 2025 -> 25
+      final month = date.month.toString().padLeft(2, '0');
+      final day = date.day.toString().padLeft(2, '0');
+      return '$year.$month.$day';
+    } catch (e) {
+      return dateString; // 파싱 실패시 원본 반환
+    }
+  }
+
   void _toggleFavorite(String symbol) {
     setState(() {
       if (_favoriteStocks.contains(symbol)) {
@@ -212,7 +240,7 @@ class _MainPageState extends State<MainPage> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  idx['value'] as String,
+                  _formatNumber(idx['value'] as String),
                   style: const TextStyle(
                     fontFamily: 'Montserrat-SemiBold',
                     fontSize: 20,
@@ -523,6 +551,22 @@ class _StockListItem extends StatelessWidget {
     required this.onToggleFavorite,
   });
 
+  String _formatDate(String? dateString) {
+    if (dateString == null || dateString.isEmpty) return '-';
+    
+    try {
+      // 2025-08-01 형식을 DateTime으로 파싱
+      final date = DateTime.parse(dateString);
+      // 25.08.01 형식으로 변환
+      final year = date.year.toString().substring(2); // 2025 -> 25
+      final month = date.month.toString().padLeft(2, '0');
+      final day = date.day.toString().padLeft(2, '0');
+      return '$year.$month.$day';
+    } catch (e) {
+      return dateString; // 파싱 실패시 원본 반환
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final marketData = stock['marketData'];
@@ -564,7 +608,7 @@ class _StockListItem extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              padding: const EdgeInsets.symmetric(horizontal: 2.0),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -639,10 +683,12 @@ class _StockListItem extends StatelessWidget {
                 ],
               ),
             ),
-            if (hasMarketData && marketData['foreignerNetBuy'] != null) ...[
-              const SizedBox(height: 12),
-              Column(
-                children: [
+                          if (hasMarketData && marketData['foreignerNetBuy'] != null) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 2.0),
+                  child: Column(
+                    children: [
                   Row(
                     children: List.generate(4, (i) {
                       final foreignerData = marketData['foreignerNetBuy'][i];
@@ -657,7 +703,7 @@ class _StockListItem extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Text(
-                                date ?? '-',
+                                _formatDate(date),
                                 textAlign: TextAlign.center,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -676,7 +722,7 @@ class _StockListItem extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   fontFamily: 'Montserrat-SemiBold',
-                                  fontSize: 16,
+                                  fontSize: 17,
                                   color: netBuy != null 
                                     ? (netBuy > 0 ? Colors.red : Colors.blue)
                                     : Colors.grey,
@@ -703,7 +749,7 @@ class _StockListItem extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Text(
-                                date ?? '-',
+                                _formatDate(date),
                                 textAlign: TextAlign.center,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -722,7 +768,7 @@ class _StockListItem extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   fontFamily: 'Montserrat-SemiBold',
-                                  fontSize: 16,
+                                  fontSize: 17,
                                   color: netBuy != null 
                                     ? (netBuy > 0 ? Colors.red : Colors.blue)
                                     : Colors.grey,
@@ -734,10 +780,11 @@ class _StockListItem extends StatelessWidget {
                       );
                     }),
                   ),
-                ],
+                                  ],
+                ),
               ),
             ],
-          ],
+            ],
         ),
       ),
     );
