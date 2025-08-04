@@ -1,8 +1,20 @@
+// 환경변수 로드
+require('dotenv').config();
+
 const express = require('express');
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const db = require('./models'); // models/index.js를 로드
 const { spawn } = require('child_process'); // Python 스크립트 실행을 위한 모듈
+const axios = require('axios');
+const jwt = require('jsonwebtoken');
+
+// 환경변수에서 민감한 정보 로드
+const JWT_SECRET = process.env.JWT_SECRET;
+const KAKAO_CLIENT_ID = process.env.KAKAO_CLIENT_ID;
+const KAKAO_CLIENT_SECRET = process.env.KAKAO_CLIENT_SECRET;
+const KAKAO_REDIRECT_URI = process.env.KAKAO_REDIRECT_URI;
+const KAKAO_ANDROID_REDIRECT_URI = process.env.KAKAO_ANDROID_REDIRECT_URI;
 
 // 주식 크롤러 실행 함수
 function runCrawler() {
@@ -113,11 +125,12 @@ app.get('/', (req, res) => {
 });
 
 // 모든 주식 정보 가져오기 API 엔드포인트
-app.get('/stocks', async (req, res) => {
+app.get('/stocks', authenticateToken, async (req, res) => {
   try {
-    console.log('Available models:', Object.keys(db));
-    console.log('db.stock:', db.stock);
-    const stocks = await db.stock.findAll();
+    console.log('사용자별 주식 조회:', req.user.userId);
+    const stocks = await db.stock.findAll({
+      where: { userId: req.user.userId }
+    });
     res.status(200).json(stocks);
   } catch (error) {
     console.error('Error fetching stocks:', error);
@@ -126,11 +139,13 @@ app.get('/stocks', async (req, res) => {
 });
 
 // Stocks와 MarketData를 조인해서 가져오는 API 엔드포인트
-app.get('/stocks/marketdata', async (req, res) => {
+app.get('/stocks/marketdata', authenticateToken, async (req, res) => {
   try {
-    console.log('=== Stocks MarketData 요청 시작 ===');
+    console.log('=== 사용자별 Stocks MarketData 요청 시작 ===');
+    console.log('사용자 ID:', req.user.userId);
     
     const stocksWithMarketData = await db.stock.findAll({
+      where: { userId: req.user.userId },
       include: [{
         model: db.MarketData,
         as: 'marketData',
@@ -179,7 +194,7 @@ app.get('/stocks/marketdata', async (req, res) => {
 });
 
 // 종목 추가 API 엔드포인트
-app.post('/stock/add', async (req, res) => {
+app.post('/stock/add', authenticateToken, async (req, res) => {
   const { symbol } = req.body;
 
   if (!symbol) {
@@ -216,8 +231,8 @@ app.post('/stock/add', async (req, res) => {
               defaults: {
                 symbol: symbol,
                 name: fetchedStockName,
-                // userId는 현재 로그인 기능이 없으므로 임시로 1로 설정
-                userId: 1 
+                // userId는 요청에서 받은 사용자 ID 사용
+                userId: req.user ? req.user.userId : 1 
               }
             });
 
@@ -391,6 +406,179 @@ app.get('/crawler/status', (req, res) => {
     stockCrawler: isStockCrawlerRunning,
     indexCrawler: isIndexCrawlerRunning
   });
+});
+
+// 카카오 로그인 콜백 처리 (웹용)
+app.get('/auth/kakao/callback', async (req, res) => {
+  try {
+    const { code } = req.query;
+    if (!code) {
+      return res.status(400).json({ message: '인증 코드가 필요합니다.' });
+    }
+
+    // 카카오 액세스 토큰 요청
+    const tokenResponse = await axios.post('https://kauth.kakao.com/oauth/token', {
+      grant_type: 'authorization_code',
+      client_id: KAKAO_CLIENT_ID,
+      client_secret: KAKAO_CLIENT_SECRET,
+      code: code,
+      redirect_uri: KAKAO_REDIRECT_URI
+    }, {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    });
+
+    const { access_token } = tokenResponse.data;
+
+    // 카카오 사용자 정보 요청
+    const userResponse = await axios.get('https://kapi.kakao.com/v2/user/me', {
+      headers: { 'Authorization': `Bearer ${access_token}` }
+    });
+
+    const kakaoUser = userResponse.data;
+    console.log('카카오 사용자 정보:', kakaoUser);
+
+    // 사용자 정보 저장/업데이트
+    let user;
+    let created = false;
+    try {
+      user = await db.user.findOne({ where: { kakaoId: kakaoUser.id.toString() } });
+      if (user) {
+        await user.update({
+          nickname: kakaoUser.properties?.nickname || user.nickname,
+          email: kakaoUser.kakao_account?.email || user.email,
+          lastLoginAt: new Date()
+        });
+      } else {
+        user = await db.user.create({
+          kakaoId: kakaoUser.id.toString(),
+          nickname: kakaoUser.properties?.nickname || '사용자',
+          email: kakaoUser.kakao_account?.email || null,
+          loginType: 'kakao',
+          isActive: true,
+          lastLoginAt: new Date()
+        });
+        created = true;
+      }
+    } catch (error) {
+      if (error.name === 'SequelizeUniqueConstraintError' && error.fields && error.fields.email) {
+        user = await db.user.create({
+          kakaoId: kakaoUser.id.toString(),
+          nickname: kakaoUser.properties?.nickname || '사용자',
+          email: null,
+          loginType: 'kakao',
+          isActive: true,
+          lastLoginAt: new Date()
+        });
+        created = true;
+      } else {
+        throw error;
+      }
+    }
+
+    // JWT 토큰 생성
+    const token = jwt.sign(
+      { userId: user.id, kakaoId: user.kakaoId, nickname: user.nickname },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    console.log('JWT 토큰 생성 완료');
+    res.json({ token: token, user: { id: user.id, kakaoId: user.kakaoId, nickname: user.nickname, email: user.email } });
+  } catch (error) {
+    console.error('카카오 로그인 처리 오류:', error);
+    res.status(500).json({ message: '카카오 로그인 처리 중 오류가 발생했습니다.' });
+  }
+});
+
+// Flutter 앱에서 카카오 로그인 후 사용자 정보를 받아 JWT 토큰 생성
+app.post('/auth/kakao/callback', async (req, res) => {
+  try {
+    const { kakaoId, nickname, email } = req.body;
+    if (!kakaoId) {
+      return res.status(400).json({ message: '카카오 ID가 필요합니다.' });
+    }
+    console.log('Flutter에서 받은 카카오 사용자 정보:', { kakaoId, nickname, email });
+
+    let user;
+    let created = false;
+    try {
+      user = await db.user.findOne({ where: { kakaoId: kakaoId.toString() } });
+      if (user) {
+        await user.update({
+          nickname: nickname || user.nickname,
+          email: email || user.email,
+          lastLoginAt: new Date()
+        });
+      } else {
+        user = await db.user.create({
+          kakaoId: kakaoId.toString(),
+          nickname: nickname || '사용자',
+          email: email || null,
+          loginType: 'kakao',
+          isActive: true,
+          lastLoginAt: new Date()
+        });
+        created = true;
+      }
+    } catch (error) {
+      if (error.name === 'SequelizeUniqueConstraintError' && error.fields && error.fields.email) {
+        user = await db.user.create({
+          kakaoId: kakaoId.toString(),
+          nickname: nickname || '사용자',
+          email: null,
+          loginType: 'kakao',
+          isActive: true,
+          lastLoginAt: new Date()
+        });
+        created = true;
+      } else {
+        throw error;
+      }
+    }
+
+    const token = jwt.sign(
+      { userId: user.id, kakaoId: user.kakaoId, nickname: user.nickname },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+    console.log('JWT 토큰 생성 완료');
+    res.json({ token: token, user: { id: user.id, kakaoId: user.kakaoId, nickname: user.nickname, email: user.email } });
+  } catch (error) {
+    console.error('카카오 로그인 처리 오류:', error);
+    res.status(500).json({ message: '카카오 로그인 처리 중 오류가 발생했습니다.' });
+  }
+});
+
+// JWT 토큰 검증 미들웨어
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ message: '액세스 토큰이 필요합니다.' });
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({ message: '유효하지 않은 토큰입니다.' });
+    }
+    req.user = user;
+    next();
+  });
+};
+
+// 인증된 사용자 정보 조회
+app.get('/auth/me', authenticateToken, async (req, res) => {
+  try {
+    const user = await db.user.findByPk(req.user.userId);
+    if (!user) {
+      return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
+    }
+    res.json({ user: { id: user.id, kakaoId: user.kakaoId, nickname: user.nickname, email: user.email } });
+  } catch (error) {
+    console.error('사용자 정보 조회 오류:', error);
+    res.status(500).json({ message: '사용자 정보 조회 중 오류가 발생했습니다.' });
+  }
 });
 
 // 지수 크롤러 실행 API 엔드포인트

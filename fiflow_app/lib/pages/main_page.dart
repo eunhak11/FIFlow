@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
+import '../services/auth_service.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({Key? key, required this.onManageStocks}) : super(key: key);
@@ -22,7 +23,7 @@ class _MainPageState extends State<MainPage> {
 
   // API 서버 URL 설정
   String get _apiBaseUrl {
-    return 'http://localhost:3000'; // 로컬 개발용
+    return 'http://172.30.1.14:3000'; // 실제 서버 IP
   }
 
   @override
@@ -70,7 +71,11 @@ class _MainPageState extends State<MainPage> {
 
   Future<void> _fetchStocksWithMarketData() async {
     try {
-      final response = await http.get(Uri.parse('$_apiBaseUrl/stocks/marketdata'));
+      final headers = await AuthService.getAuthHeaders();
+      final response = await http.get(
+        Uri.parse('$_apiBaseUrl/stocks/marketdata'),
+        headers: headers
+      );
       
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
@@ -79,11 +84,13 @@ class _MainPageState extends State<MainPage> {
           _isLoading = false;
         });
       } else {
+        print('주식 데이터 조회 실패: ${response.statusCode}');
         setState(() {
           _isLoading = false;
         });
       }
     } catch (e) {
+      print('주식 데이터 조회 오류: $e');
       setState(() {
         _isLoading = false;
       });
@@ -108,6 +115,34 @@ class _MainPageState extends State<MainPage> {
   String _getCurrentDate() {
     final now = DateTime.now();
     return '${now.year}.${now.month.toString().padLeft(2, '0')}.${now.day.toString().padLeft(2, '0')}';
+  }
+
+  String _formatNumber(String value) {
+    try {
+      // 숫자로 파싱
+      final number = double.parse(value);
+      // 3자리마다 쉼표 추가
+      final formatter = NumberFormat('#,###.##');
+      return formatter.format(number);
+    } catch (e) {
+      return value; // 파싱 실패시 원본 반환
+    }
+  }
+
+  String _formatDate(String? dateString) {
+    if (dateString == null || dateString.isEmpty) return '-';
+    
+    try {
+      // 2025-08-01 형식을 DateTime으로 파싱
+      final date = DateTime.parse(dateString);
+      // 25.08.01 형식으로 변환
+      final year = date.year.toString().substring(2); // 2025 -> 25
+      final month = date.month.toString().padLeft(2, '0');
+      final day = date.day.toString().padLeft(2, '0');
+      return '$year.$month.$day';
+    } catch (e) {
+      return dateString; // 파싱 실패시 원본 반환
+    }
   }
 
   void _toggleFavorite(String symbol) {
@@ -212,7 +247,7 @@ class _MainPageState extends State<MainPage> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  idx['value'] as String,
+                  _formatNumber(idx['value'] as String),
                   style: const TextStyle(
                     fontFamily: 'Montserrat-SemiBold',
                     fontSize: 20,
@@ -331,14 +366,6 @@ class _MainPageState extends State<MainPage> {
         ],
         // 나머지 주식들
         if (nonFavoriteStocks.isNotEmpty) ...[
-          const Text(
-            '전체 주식',
-            style: TextStyle(
-              fontFamily: 'Montserrat-SemiBold',
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
           const SizedBox(height: 8),
           ...nonFavoriteStocks.map((stock) => _StockListItem(
             stock: stock,
@@ -523,6 +550,22 @@ class _StockListItem extends StatelessWidget {
     required this.onToggleFavorite,
   });
 
+  String _formatDate(String? dateString) {
+    if (dateString == null || dateString.isEmpty) return '-';
+    
+    try {
+      // 2025-08-01 형식을 DateTime으로 파싱
+      final date = DateTime.parse(dateString);
+      // 25.08.01 형식으로 변환
+      final year = date.year.toString().substring(2); // 2025 -> 25
+      final month = date.month.toString().padLeft(2, '0');
+      final day = date.day.toString().padLeft(2, '0');
+      return '$year.$month.$day';
+    } catch (e) {
+      return dateString; // 파싱 실패시 원본 반환
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final marketData = stock['marketData'];
@@ -564,7 +607,7 @@ class _StockListItem extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              padding: const EdgeInsets.symmetric(horizontal: 2.0),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -639,10 +682,12 @@ class _StockListItem extends StatelessWidget {
                 ],
               ),
             ),
-            if (hasMarketData && marketData['foreignerNetBuy'] != null) ...[
-              const SizedBox(height: 12),
-              Column(
-                children: [
+                          if (hasMarketData && marketData['foreignerNetBuy'] != null) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 2.0),
+                  child: Column(
+                    children: [
                   Row(
                     children: List.generate(4, (i) {
                       final foreignerData = marketData['foreignerNetBuy'][i];
@@ -657,7 +702,7 @@ class _StockListItem extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Text(
-                                date ?? '-',
+                                _formatDate(date),
                                 textAlign: TextAlign.center,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -676,7 +721,7 @@ class _StockListItem extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   fontFamily: 'Montserrat-SemiBold',
-                                  fontSize: 16,
+                                  fontSize: 17,
                                   color: netBuy != null 
                                     ? (netBuy > 0 ? Colors.red : Colors.blue)
                                     : Colors.grey,
@@ -703,7 +748,7 @@ class _StockListItem extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Text(
-                                date ?? '-',
+                                _formatDate(date),
                                 textAlign: TextAlign.center,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -722,7 +767,7 @@ class _StockListItem extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   fontFamily: 'Montserrat-SemiBold',
-                                  fontSize: 16,
+                                  fontSize: 17,
                                   color: netBuy != null 
                                     ? (netBuy > 0 ? Colors.red : Colors.blue)
                                     : Colors.grey,
@@ -734,10 +779,11 @@ class _StockListItem extends StatelessWidget {
                       );
                     }),
                   ),
-                ],
+                                  ],
+                ),
               ),
             ],
-          ],
+            ],
         ),
       ),
     );

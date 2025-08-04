@@ -36,6 +36,13 @@ dependencies:
   cupertino_icons: ^1.0.8
   http: ^1.2.1 # http 패키지 추가
   intl: ^0.19.0 # 숫자 형식화를 위한 패키지
+  shared_preferences: ^2.2.2 # 로컬 저장소 (웹용)
+  sqflite: ^2.3.0 # SQLite 데이터베이스 (모바일/데스크톱용)
+  sqflite_common_ffi: ^2.3.2 # 웹용 SQLite
+  path: ^1.8.3 # 파일 경로 처리
+  kakao_flutter_sdk: ^1.9.0 # 카카오 로그인 SDK
+  flutter_secure_storage: ^9.0.0 # 보안 저장소
+  flutter_dotenv: ^5.1.0 # 환경변수 관리
 
 dev_dependencies:
   flutter_test:
@@ -60,9 +67,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/.env
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

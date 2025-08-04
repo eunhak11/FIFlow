@@ -1,8 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 import 'pages/main_page.dart';
 import 'pages/manage_stocks_page.dart';
+import 'pages/login_page.dart';
+import 'services/auth_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // 환경변수 로드
+  await dotenv.load(fileName: "assets/.env");
+  
+  KakaoSdk.init(
+    nativeAppKey: dotenv.env['KAKAO_NATIVE_APP_KEY'] ?? '17c60462c6fff4b87a4223e3038abf4e',
+    javaScriptAppKey: dotenv.env['KAKAO_JAVASCRIPT_APP_KEY'] ?? '2e82af882e2d60718781f0c13628a836',
+  );
   runApp(const MyApp());
 }
 
@@ -15,6 +28,20 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   bool _showManageStocks = false;
+  bool _isLoggedIn = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkLoginStatus();
+  }
+
+  Future<void> _checkLoginStatus() async {
+    final isLoggedIn = await AuthService.isLoggedIn();
+    setState(() {
+      _isLoggedIn = isLoggedIn;
+    });
+  }
 
   void _goToManageStocks() {
     setState(() {
@@ -28,6 +55,12 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  void _onLoginSuccess() {
+    setState(() {
+      _isLoggedIn = true;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -35,9 +68,11 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: _showManageStocks
-          ? ManageStocksPage(onBack: _goToMainPage)
-          : MainPage(onManageStocks: _goToManageStocks),
+      home: _isLoggedIn
+          ? (_showManageStocks
+              ? ManageStocksPage(onBack: _goToMainPage)
+              : MainPage(onManageStocks: _goToManageStocks))
+          : LoginPage(onLoginSuccess: _onLoginSuccess),
     );
   }
 } 
