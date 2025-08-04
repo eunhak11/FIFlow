@@ -361,14 +361,7 @@ class _MainPageState extends State<MainPage> {
       children: [
         // 즐겨찾기 섹션 (즐겨찾기가 있을 때만 표시)
         if (favoriteStocks.isNotEmpty) ...[
-          const Text(
-            '즐겨찾기',
-            style: TextStyle(
-              fontFamily: 'Montserrat-SemiBold',
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+        
           const SizedBox(height: 8),
           ...favoriteStocks.map((stock) => _StockListItem(
             stock: stock,
@@ -429,32 +422,34 @@ class _MainPageState extends State<MainPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Stocks',
-                          style: TextStyle(
-                            fontFamily: 'Montserrat-SemiBold',
-                            fontSize: 64,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: -2,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Stocks',
+                            style: TextStyle(
+                              fontFamily: 'Montserrat-SemiBold',
+                              fontSize: 48,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: -2,
+                            ),
                           ),
-                        ),
-                        SizedBox(height: 2),
-                        Text(
-                          _getCurrentDate(),
-                          style: TextStyle(
-                            fontFamily: 'Montserrat-Regular',
-                            fontSize: 30,
-                            color: Colors.grey[700],
+                          SizedBox(height: 2),
+                          Text(
+                            _getCurrentDate(),
+                            style: TextStyle(
+                              fontFamily: 'Montserrat-Regular',
+                              fontSize: 30,
+                              color: Colors.grey[700],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                     Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         ElevatedButton(
                           onPressed: widget.onManageStocks,
@@ -464,13 +459,13 @@ class _MainPageState extends State<MainPage> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(4), // 입력란과 같은 둥근 모서리
                             ),
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           ),
                           child: const Text(
                             'Manage',
                             style: TextStyle(
                               fontFamily: 'Montserrat-SemiBold',
-                              fontSize: 18,
+                              fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: Colors.black, // 명시적으로 검은색 지정
                             ),
@@ -491,13 +486,13 @@ class _MainPageState extends State<MainPage> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(4), // 입력란과 같은 둥근 모서리
                             ),
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           ),
                           child: const Text(
                             'Refresh',
                             style: TextStyle(
                               fontFamily: 'Montserrat-SemiBold',
-                              fontSize: 18,
+                              fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: Colors.black, // 명시적으로 검은색 지정
                             ),

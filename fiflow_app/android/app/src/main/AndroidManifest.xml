@@ -3,7 +3,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-        android:label="vive_stock_app"
+        android:label="@string/app_name"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -27,14 +27,7 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-            <!-- 수정: 카카오 로그인 리디렉트 URI용 intent-filter (host="oauth" 추가) -->
-            <!-- 이 intent-filter는 MainActivity에 둘 수 있지만, 아래 별도 activity로 이동하는 게 더 나음 -->
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="kakao17c60462c6fff4b87a4223e3038abf4e" android:host="oauth" />
-            </intent-filter>
+            <!-- 카카오 로그인 리디렉트 URI용 intent-filter는 제거 (flutter_web_auth가 처리) -->
         </activity>
         <!-- 추가: 카카오 로그인 웹 fallback 리디렉트 처리용 activity (Custom Tabs 콜백) -->
         <activity
