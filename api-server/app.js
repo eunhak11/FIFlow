@@ -1,17 +1,20 @@
+// 환경변수 로드
+require('dotenv').config();
+
 const express = require('express');
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const db = require('./models'); // models/index.js를 로드
 const { spawn } = require('child_process'); // Python 스크립트 실행을 위한 모듈
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
 
-// JWT 시크릿 키 (실제 운영에서는 환경변수로 관리)
-const JWT_SECRET = 'tmpIAkIQ3EkvMcpqFBCBM9XXQDe4sFPl';
-const KAKAO_CLIENT_ID = 'a261f0e0564225d203c0a80ee62edffd';
-const KAKAO_CLIENT_SECRET = 'p2S1F966edBXJNk9pbCOwvHp7mAYqD33'; // 실제 시크릿으로 교체 필요
-const KAKAO_REDIRECT_URI = 'http://localhost:3000/auth/kakao/callback';
-const KAKAO_ANDROID_REDIRECT_URI = 'kakao17c60462c6fff4b87a4223e3038abf4e://oauth';
+// 환경변수에서 민감한 정보 로드
+const JWT_SECRET = process.env.JWT_SECRET;
+const KAKAO_CLIENT_ID = process.env.KAKAO_CLIENT_ID;
+const KAKAO_CLIENT_SECRET = process.env.KAKAO_CLIENT_SECRET;
+const KAKAO_REDIRECT_URI = process.env.KAKAO_REDIRECT_URI;
+const KAKAO_ANDROID_REDIRECT_URI = process.env.KAKAO_ANDROID_REDIRECT_URI;
 
 // 주식 크롤러 실행 함수
 function runCrawler() {

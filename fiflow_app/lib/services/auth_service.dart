@@ -1,11 +1,15 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class AuthService {
   static const _storage = FlutterSecureStorage();
   static const String _tokenKey = 'jwt_token';
-  static const String _baseUrl = 'http://172.30.1.14:3000';
+  
+  static String get _baseUrl {
+    return dotenv.env['API_BASE_URL'] ?? 'http://172.30.1.14:3000';
+  }
 
   // JWT 토큰 저장
   static Future<void> saveToken(String token) async {
