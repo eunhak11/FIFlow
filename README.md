@@ -1,4 +1,4 @@
-# FIFlow - 외국인 투자 동향 분석 플랫폼
+# FIFlow
 
 <div align="center">
   <img src="fiflow_app/assets/ic_launcher.png" alt="FIFlow Logo" width="120" height="120">
@@ -7,7 +7,7 @@
 
 ## 📋 프로젝트 개요
 
-FIFlow는 외국인 투자 동향을 실시간으로 분석하고 제공하는 주식 투자 플랫폼입니다. Flutter로 개발된 모바일 앱과 Node.js 백엔드 API, Python 크롤러로 구성되어 있습니다.
+FIFlow는 외국인 투자 동향을 실시간으로 분석하고 제공하는 플랫폼. Flutter로 개발된 모바일 앱과 Node.js 백엔드 API 서버, Python 크롤러로 구성.
 
 ## 🏗️ 프로젝트 구조
 
