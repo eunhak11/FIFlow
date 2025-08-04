@@ -11,6 +11,7 @@ FIFlow는 외국인 투자 동향 및 주식 정보를 실시간으로 제공하
 
 Flutter로 개발된 모바일 앱과 Node.js 백엔드 API 서버, Python 크롤러로 구성되어 있습니다.
 
+
 ## 🏗️ 프로젝트 구조
 
 ```
@@ -20,6 +21,7 @@ viveWeb/
 ├── fiflow_app/         # Flutter 모바일 앱
 └── docker-compose.yml  # Docker 컨테이너 설정
 ```
+
 
 ## 🚀 주요 기능
 
