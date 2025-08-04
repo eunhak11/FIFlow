@@ -1,233 +1,122 @@
-# FIFlow - 외국인 투자 동향 분석 플랫폼
+# FIFlow App
 
-<div align="center">
-  <img src="fiflow_app/assets/ic_launcher.png" alt="FIFlow Logo" width="120" height="120">
-  <h3>외국인 투자 동향을 한번에!</h3>
-</div>
-
-## 📋 프로젝트 개요
-
-FIFlow는 외국인 투자 동향을 실시간으로 분석하고 제공하는 스마트 주식 투자 플랫폼입니다. Flutter로 개발된 모바일 앱과 Node.js 백엔드 API, Python 크롤러로 구성되어 있습니다.
-
-## 🏗️ 프로젝트 구조
-
-```
-viveWeb/
-├── api-server/          # Node.js 백엔드 API
-├── crawler/            # Python 주식 데이터 크롤러
-├── fiflow_app/         # Flutter 모바일 앱
-└── docker-compose.yml  # Docker 컨테이너 설정
-```
+주식정보 확인을 위한 Flutter 앱과 Node.js API 서버입니다.
 
 ## 🚀 주요 기능
 
-### 📱 모바일 앱 (Flutter)
-- **카카오 로그인**: 간편한 소셜 로그인
-- **실시간 주식 데이터**: 외국인 순매매 정보 실시간 제공
-- **즐겨찾기 기능**: Hive를 활용한 로컬 즐겨찾기 관리
-- **반응형 UI**: 다양한 화면 크기에 최적화된 UI
-- **스플래시 스크린**: 커스텀 로딩 화면
+- **주식 추가**: 종목 코드를 입력하여 관심 주식 추가
+- **실시간 크롤링**: 네이버 금융에서 최신 종목명 및 주가, 외국인 순매매량 크롤링
+- **주식 목록 관리**: 추가된 주식들의 목록 조회
+- **크로스 플랫폼**: Flutter로 iOS/Android 지원
 
-### 🔧 백엔드 API (Node.js)
-- **RESTful API**: 주식 데이터 제공
-- **데이터베이스**: Sequelize ORM을 활용한 데이터 관리
-- **마이그레이션**: 데이터베이스 스키마 관리
-- **환경 변수**: 플랫폼별 설정 관리
+## 🏗️ 아키텍처
 
-### 🕷️ 데이터 크롤러 (Python)
-- **실시간 크롤링**: 주식 시장 데이터 수집
-- **자동화**: 정기적인 데이터 업데이트
-- **에러 처리**: 안정적인 데이터 수집
+```
+┌─────────────────┐    HTTP    ┌─────────────────┐    Python  ┌─────────────────┐
+│   Flutter App   │ ────────── │   Node.js API   │ ────────── │   Web Crawler   │
+│                 │            │                 │            │                 │
+│ - UI Components │            │ - Express.js    │            │ - BeautifulSoup │
+│ - HTTP Client   │            │ - Sequelize ORM │            │ - Requests      │
+│ - State Mgmt    │            │ - MySQL DB      │            │ - 네이버 금융      │
+└─────────────────┘            └─────────────────┘            └─────────────────┘
+```
 
 ## 🛠️ 기술 스택
 
 ### Frontend
-- **Flutter**: 크로스 플랫폼 모바일 앱 개발
-- **Dart**: 프로그래밍 언어
-- **Hive**: 로컬 데이터베이스
-- **Kakao SDK**: 소셜 로그인
+- **Flutter**: 크로스 플랫폼 모바일 앱
+- **HTTP**: API 통신
 
 ### Backend
-- **Node.js**: 서버 런타임
+- **Node.js**: API 서버
 - **Express.js**: 웹 프레임워크
 - **Sequelize**: ORM
 - **MySQL**: 데이터베이스
 
-### Data Collection
-- **Python**: 크롤링 스크립트
-- **BeautifulSoup**: 웹 스크래핑
-- **Selenium**: 동적 콘텐츠 처리
+### Crawler
+- **Python**: 웹 크롤링
+- **BeautifulSoup**: HTML 파싱
+- **Requests**: HTTP 요청
 
-### DevOps
+### Infrastructure
 - **Docker**: 컨테이너화
 - **Docker Compose**: 멀티 컨테이너 관리
 
-## 📦 설치 및 실행
+## 📁 프로젝트 구조
+
+```
+viveWeb/
+├── api-server/              # Node.js API 서버
+│   ├── app.js               # 메인 서버 파일
+│   ├── models/              # 데이터베이스 모델
+│   ├── migrations/          # DB 마이그레이션
+│   └── config/              # 설정 파일
+├── crawler/                 # Python 크롤러
+│   ├── get_stock_info.py    # 주식 정보 크롤링
+│   └── requirements.txt     # Python 의존성
+├── fiflow_app/              # Flutter 앱
+│   └── lib/
+│       ├── pages/           # 페이지 컴포넌트
+│       └── widgets/         # 재사용 위젯
+└── docker-compose.yml       # Docker 설정
+```
+
+## 🚀 시작하기
 
 ### 1. 저장소 클론
 ```bash
-git clone https://github.com/eunhak11/FIFlow.git
-cd FIFlow
+git clone <repository-url>
+cd viveWeb
 ```
 
-### 2. 환경 변수 설정
-
-#### API 서버
+### 2. Docker로 실행
 ```bash
-cd api-server
-cp env.server.template .env
-# .env 파일을 편집하여 데이터베이스 정보 입력
+# 모든 서비스 시작
+docker-compose up -d
+
+# 로그 확인
+docker-compose logs -f
 ```
 
-#### Flutter 앱
+### 3. Flutter 앱 실행
 ```bash
 cd fiflow_app
-cp env.app.template .env
-# .env 파일을 편집하여 API 엔드포인트 입력
+flutter run
 ```
 
-### 3. 백엔드 실행
+## 📱 사용법
+
+1. **주식 추가**: 종목 코드 입력 후 Add 버튼 클릭
+2. **주식 목록**: 현재 추가된 주식들 확인
+3. **실시간 크롤링**: 네이버 금융에서 최신 종목명 자동 가져오기
+
+## 🔧 개발 환경 설정
+
+### API 서버 개발
 ```bash
 cd api-server
 npm install
 npm start
 ```
 
-### 4. 크롤러 실행
+### 크롤러 개발
 ```bash
 cd crawler
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+python3 -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
-python main.py
+python get_stock_info.py 005930
 ```
 
-### 5. Flutter 앱 실행
+### Flutter 앱 개발
 ```bash
 cd fiflow_app
 flutter pub get
 flutter run
 ```
 
-## 🐳 Docker 실행
+## 📊 API 엔드포인트
 
-```bash
-docker-compose up -d
-```
-
-## 📱 앱 빌드
-
-### APK 생성
-```bash
-cd fiflow_app
-flutter build apk --release
-```
-
-생성된 APK: `build/app/outputs/flutter-apk/app-release.apk`
-
-## 🗄️ 데이터베이스 스키마
-
-### 주요 테이블
-- **users**: 사용자 정보
-- **stocks**: 주식 기본 정보
-- **marketdata**: 시장 데이터 (외국인 순매매 등)
-- **indexdata**: 지수 데이터
-- **stars**: 즐겨찾기 정보
-
-## 🔐 환경 변수
-
-### API 서버 (.env)
-```env
-DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=password
-DB_NAME=fiflow_db
-JWT_SECRET=your_jwt_secret
-```
-
-### Flutter 앱 (.env)
-```env
-API_BASE_URL=http://localhost:3000
-KAKAO_NATIVE_APP_KEY=your_kakao_app_key
-```
-
-## 🎨 UI/UX 특징
-
-- **모던한 디자인**: Material Design 기반
-- **반응형 레이아웃**: 다양한 화면 크기 지원
-- **직관적인 네비게이션**: 사용자 친화적 인터페이스
-- **커스텀 스플래시**: 브랜드 아이덴티티 강화
-
-## 🔄 개발 워크플로우
-
-1. **브랜치 생성**: `git checkout -b feature/기능명`
-2. **개발**: 기능 구현 및 테스트
-3. **커밋**: `git commit -m "설명"`
-4. **푸시**: `git push origin 브랜치명`
-5. **PR 생성**: GitHub에서 Pull Request 생성
-
-## 📊 주요 API 엔드포인트
-
-- `GET /api/stocks`: 주식 목록 조회
-- `GET /api/marketdata`: 시장 데이터 조회
-- `POST /api/auth/kakao`: 카카오 로그인
-- `GET /api/user/favorites`: 즐겨찾기 조회
-
-## 🧪 테스트
-
-### Flutter 앱 테스트
-```bash
-cd fiflow_app
-flutter test
-```
-
-### API 테스트
-```bash
-cd api-server
-npm test
-```
-
-## 📈 성능 최적화
-
-- **이미지 최적화**: 압축된 아이콘 및 이미지 사용
-- **코드 스플리팅**: 필요한 기능만 로드
-- **캐싱**: Hive를 활용한 로컬 데이터 캐싱
-- **API 최적화**: 효율적인 데이터베이스 쿼리
-
-## 🔒 보안
-
-- **JWT 토큰**: 안전한 인증 처리
-- **환경 변수**: 민감한 정보 보호
-- **HTTPS**: 보안 통신
-- **입력 검증**: 사용자 입력 데이터 검증
-
-## 🤝 기여하기
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📄 라이선스
-
-이 프로젝트는 MIT 라이선스 하에 배포됩니다. 자세한 내용은 `LICENSE` 파일을 참조하세요.
-
-## 📞 연락처
-
-- **개발자**: Eunhak
-- **GitHub**: [@eunhak11](https://github.com/eunhak11)
-- **프로젝트 링크**: [https://github.com/eunhak11/FIFlow](https://github.com/eunhak11/FIFlow)
-
-## 🙏 감사의 말
-
-- **Kakao**: 소셜 로그인 SDK 제공
-- **Flutter**: 크로스 플랫폼 개발 프레임워크
-- **Node.js**: 백엔드 개발 플랫폼
-- **Python**: 데이터 크롤링 도구
-
----
-
-<div align="center">
-  <p>⭐ 이 프로젝트가 도움이 되었다면 스타를 눌러주세요!</p>
-</div>
+- `GET /stocks`: 주식 목록 조회
+- `POST /stock/add`: 주식 추가
+- `GET /stock/:symbol/foreign`: 외국인 매매량 조회
