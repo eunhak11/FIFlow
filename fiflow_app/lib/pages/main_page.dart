@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
+import '../services/auth_service.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({Key? key, required this.onManageStocks}) : super(key: key);
@@ -22,7 +23,7 @@ class _MainPageState extends State<MainPage> {
 
   // API 서버 URL 설정
   String get _apiBaseUrl {
-    return 'http://localhost:3000'; // 로컬 개발용
+    return 'http://172.30.1.14:3000'; // 실제 서버 IP
   }
 
   @override
@@ -70,7 +71,11 @@ class _MainPageState extends State<MainPage> {
 
   Future<void> _fetchStocksWithMarketData() async {
     try {
-      final response = await http.get(Uri.parse('$_apiBaseUrl/stocks/marketdata'));
+      final headers = await AuthService.getAuthHeaders();
+      final response = await http.get(
+        Uri.parse('$_apiBaseUrl/stocks/marketdata'),
+        headers: headers
+      );
       
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
@@ -79,11 +84,13 @@ class _MainPageState extends State<MainPage> {
           _isLoading = false;
         });
       } else {
+        print('주식 데이터 조회 실패: ${response.statusCode}');
         setState(() {
           _isLoading = false;
         });
       }
     } catch (e) {
+      print('주식 데이터 조회 오류: $e');
       setState(() {
         _isLoading = false;
       });
@@ -359,14 +366,6 @@ class _MainPageState extends State<MainPage> {
         ],
         // 나머지 주식들
         if (nonFavoriteStocks.isNotEmpty) ...[
-          const Text(
-            '전체 주식',
-            style: TextStyle(
-              fontFamily: 'Montserrat-SemiBold',
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
           const SizedBox(height: 8),
           ...nonFavoriteStocks.map((stock) => _StockListItem(
             stock: stock,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../services/auth_service.dart';
 
 class ManageStocksPage extends StatefulWidget {
   const ManageStocksPage({Key? key, required this.onBack}) : super(key: key);
@@ -17,10 +18,7 @@ class _ManageStocksPageState extends State<ManageStocksPage> {
   
   // API 서버 URL 설정
   String get _apiBaseUrl {
-    // 에뮬레이터에서 호스트 컴퓨터의 localhost에 접근
-    return 'http://localhost:3000'; // 로컬 개발용
-    // return 'http://10.0.2.2:3000'; // 에뮬레이터용 (호스트의 localhost)
-    // return 'http://172.30.1.39:3000'; // 호스트 IP
+    return 'http://172.30.1.14:3000'; // 실제 서버 IP
   }
 
   @override
@@ -33,7 +31,11 @@ class _ManageStocksPageState extends State<ManageStocksPage> {
     final String apiUrl = '$_apiBaseUrl/stocks'; // 모든 주식 정보를 가져오는 엔드포인트
 
     try {
-      final response = await http.get(Uri.parse(apiUrl));
+      final headers = await AuthService.getAuthHeaders();
+      final response = await http.get(
+        Uri.parse(apiUrl),
+        headers: headers
+      );
 
       if (response.statusCode == 200) {
         final List<dynamic> responseData = jsonDecode(response.body);
@@ -63,18 +65,16 @@ class _ManageStocksPageState extends State<ManageStocksPage> {
     try {
       print('HTTP 요청 시작...');
       print('요청 URL: $apiUrl');
-      print('요청 헤더: ${<String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      }}');
+      
+      final headers = await AuthService.getAuthHeaders();
+      print('요청 헤더: $headers');
       print('요청 본문: ${jsonEncode(<String, String>{
         'symbol': stockCode,
       })}');
       
       final response = await http.post(
         Uri.parse(apiUrl),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
+        headers: headers,
         body: jsonEncode(<String, String>{
           'symbol': stockCode,
         }),
