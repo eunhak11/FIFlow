@@ -1,23 +1,62 @@
-// 환경변수 로드
-require('dotenv').config();
-
 const express = require('express');
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 const db = require('./models'); // models/index.js를 로드
 const { spawn } = require('child_process'); // Python 스크립트 실행을 위한 모듈
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
 
-// 환경변수에서 민감한 정보 로드
-const JWT_SECRET = process.env.JWT_SECRET;
-const KAKAO_CLIENT_ID = process.env.KAKAO_CLIENT_ID;
-const KAKAO_CLIENT_SECRET = process.env.KAKAO_CLIENT_SECRET;
-const KAKAO_REDIRECT_URI = process.env.KAKAO_REDIRECT_URI;
-const KAKAO_ANDROID_REDIRECT_URI = process.env.KAKAO_ANDROID_REDIRECT_URI;
+// JWT 시크릿 키 (실제 운영에서는 환경변수로 관리)
+const JWT_SECRET = 'tmpIAkIQ3EkvMcpqFBCBM9XXQDe4sFPl';
+const KAKAO_CLIENT_ID = 'a261f0e0564225d203c0a80ee62edffd';
+const KAKAO_CLIENT_SECRET = 'p2S1F966edBXJNk9pbCOwvHp7mAYqD33'; // 실제 시크릿으로 교체 필요
+const KAKAO_REDIRECT_URI = 'http://localhost:3000/auth/kakao/callback';
+const KAKAO_ANDROID_REDIRECT_URI = 'kakao17c60462c6fff4b87a4223e3038abf4e://oauth';
+
+// JWT 토큰 검증 미들웨어
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ message: '액세스 토큰이 필요합니다.' });
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({ message: '유효하지 않은 토큰입니다.' });
+    }
+    req.user = user;
+    next();
+  });
+};
+
+// 주식시장 시간 체크 함수
+const isMarketOpen = () => {
+  const now = new Date();
+  const day = now.getDay(); // 0: 일요일, 1: 월요일, ..., 6: 토요일
+  const hour = now.getHours();
+  const minute = now.getMinutes();
+  const currentTime = hour * 100 + minute; // HHMM 형식
+
+  // 주말 체크 (토요일, 일요일)
+  if (day === 0 || day === 6) {
+    return false;
+  }
+
+  // 평일 시간 체크 (09:00 ~ 16:00)
+  return currentTime >= 900 && currentTime <= 1600;
+};
 
 // 주식 크롤러 실행 함수
 function runCrawler() {
+  // 주식시장 시간 체크
+  if (!isMarketOpen()) {
+    console.log('=== 주식시장이 닫혀있습니다. 크롤러 실행을 건너뜁니다. ===');
+    console.log('주식시장 시간: 평일 09:00 ~ 16:00');
+    return;
+  }
+
   console.log('=== 주식 크롤러 실행 시작 ===');
   isStockCrawlerRunning = true;
   
@@ -62,6 +101,13 @@ function runCrawler() {
 
 // 지수 크롤러 실행 함수
 function runIndexCrawler() {
+  // 주식시장 시간 체크
+  if (!isMarketOpen()) {
+    console.log('=== 주식시장이 닫혀있습니다. 지수 크롤러 실행을 건너뜁니다. ===');
+    console.log('주식시장 시간: 평일 09:00 ~ 16:00');
+    return;
+  }
+
   console.log('=== 지수 크롤러 실행 시작 ===');
   isIndexCrawlerRunning = true;
   
@@ -225,14 +271,16 @@ app.post('/stock/add', authenticateToken, async (req, res) => {
           const fetchedStockName = parsedData.stockName;
 
           if (fetchedStockName) {
-            // stocks 테이블에 저장
+            // stocks 테이블에 저장 (사용자별로 분리)
             const [stock, created] = await db.stock.findOrCreate({
-              where: { symbol: symbol },
+              where: { 
+                symbol: symbol,
+                userId: req.user.userId  // 사용자 ID도 함께 확인
+              },
               defaults: {
                 symbol: symbol,
                 name: fetchedStockName,
-                // userId는 요청에서 받은 사용자 ID 사용
-                userId: req.user ? req.user.userId : 1 
+                userId: req.user.userId
               }
             });
 
@@ -548,24 +596,6 @@ app.post('/auth/kakao/callback', async (req, res) => {
     res.status(500).json({ message: '카카오 로그인 처리 중 오류가 발생했습니다.' });
   }
 });
-
-// JWT 토큰 검증 미들웨어
-const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-
-  if (!token) {
-    return res.status(401).json({ message: '액세스 토큰이 필요합니다.' });
-  }
-
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) {
-      return res.status(403).json({ message: '유효하지 않은 토큰입니다.' });
-    }
-    req.user = user;
-    next();
-  });
-};
 
 // 인증된 사용자 정보 조회
 app.get('/auth/me', authenticateToken, async (req, res) => {
