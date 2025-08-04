@@ -43,6 +43,8 @@ dependencies:
   kakao_flutter_sdk: ^1.9.0 # 카카오 로그인 SDK
   flutter_secure_storage: ^9.0.0 # 보안 저장소
   flutter_dotenv: ^5.1.0 # 환경변수 관리
+  hive: ^2.2.3 # 로컬 NoSQL 데이터베이스
+  hive_flutter: ^1.1.0 # Flutter용 Hive
 
 dev_dependencies:
   flutter_test:

@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
 import '../services/auth_service.dart';
+import '../services/favorite_service.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({Key? key, required this.onManageStocks}) : super(key: key);
@@ -19,7 +20,7 @@ class _MainPageState extends State<MainPage> {
   bool _isLoading = true;
   bool _isStockCrawlerRunning = false;
   bool _isIndexCrawlerRunning = false;
-  Set<String> _favoriteStocks = {}; // 즐겨찾기된 주식들의 symbol을 저장
+  List<String> _favoriteStocks = []; // 즐겨찾기된 주식들의 symbol을 저장
 
   // API 서버 URL 설정
   String get _apiBaseUrl {
@@ -29,9 +30,22 @@ class _MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
+    _loadFavorites();
     _fetchStocksWithMarketData();
     _fetchIndices();
     _startCrawlerStatusPolling();
+  }
+
+  // 즐겨찾기 로드
+  Future<void> _loadFavorites() async {
+    try {
+      final favorites = await FavoriteService.getAllFavorites();
+      setState(() {
+        _favoriteStocks = favorites;
+      });
+    } catch (e) {
+      print('즐겨찾기 로드 오류: $e');
+    }
   }
 
   void _startCrawlerStatusPolling() {
@@ -145,15 +159,14 @@ class _MainPageState extends State<MainPage> {
     }
   }
 
-  void _toggleFavorite(String symbol) {
-    setState(() {
-      if (_favoriteStocks.contains(symbol)) {
-        _favoriteStocks.remove(symbol);
-      } else {
-        _favoriteStocks.add(symbol);
-      }
-    });
-    print('즐겨찾기 토글: $symbol (현재 즐겨찾기: ${_favoriteStocks.length}개)');
+  Future<void> _toggleFavorite(String symbol) async {
+    try {
+      await FavoriteService.toggleFavorite(symbol);
+      await _loadFavorites(); // 즐겨찾기 목록 다시 로드
+      print('즐겨찾기 토글: $symbol (현재 즐겨찾기: ${_favoriteStocks.length}개)');
+    } catch (e) {
+      print('즐겨찾기 토글 오류: $e');
+    }
   }
 
   List<Map<String, dynamic>> _getFavoriteStocks() {
@@ -541,7 +554,7 @@ class _MainPageState extends State<MainPage> {
 
 class _StockListItem extends StatelessWidget {
   final Map<String, dynamic> stock;
-  final Set<String> favoriteStocks;
+  final List<String> favoriteStocks;
   final Function(String) onToggleFavorite;
   
   const _StockListItem({
