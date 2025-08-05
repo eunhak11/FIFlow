@@ -1,0 +1,46 @@
+{
+  "TableName": "fiflow-users",
+  "KeySchema": [
+    { "AttributeName": "PK", "KeyType": "HASH" },
+    { "AttributeName": "SK", "KeyType": "RANGE" }
+  ],
+  "AttributeDefinitions": [
+    { "AttributeName": "PK", "AttributeType": "S" },
+    { "AttributeName": "SK", "AttributeType": "S" },
+    { "AttributeName": "email", "AttributeType": "S" },
+    { "AttributeName": "kakaoId", "AttributeType": "S" },
+    { "AttributeName": "symbol_date", "AttributeType": "S" },
+    { "AttributeName": "index_name_date", "AttributeType": "S" }
+  ],
+  "GlobalSecondaryIndexes": [
+    {
+      "IndexName": "email-index",
+      "KeySchema": [
+        { "AttributeName": "email", "KeyType": "HASH" }
+      ],
+      "Projection": { "ProjectionType": "ALL" }
+    },
+    {
+      "IndexName": "kakaoId-index",
+      "KeySchema": [
+        { "AttributeName": "kakaoId", "KeyType": "HASH" }
+      ],
+      "Projection": { "ProjectionType": "ALL" }
+    },
+    {
+      "IndexName": "market-data-index",
+      "KeySchema": [
+        { "AttributeName": "symbol_date", "KeyType": "HASH" }
+      ],
+      "Projection": { "ProjectionType": "ALL" }
+    },
+    {
+      "IndexName": "index-data-index",
+      "KeySchema": [
+        { "AttributeName": "index_name_date", "KeyType": "HASH" }
+      ],
+      "Projection": { "ProjectionType": "ALL" }
+    }
+  ],
+  "BillingMode": "PAY_PER_REQUEST"
+}

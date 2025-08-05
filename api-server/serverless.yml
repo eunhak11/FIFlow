@@ -1,0 +1,87 @@
+service: api-server
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: ap-northeast-2
+  environment:
+    DYNAMODB_TABLE: fiflow-users
+    JWT_SECRET: ${env:JWT_SECRET, 'tmpIAkIQ3EkvMcpqFBCBM9XXQDe4sFPl'}
+    KAKAO_CLIENT_ID: ${env:KAKAO_CLIENT_ID, 'a261f0e0564225d203c0a80ee62edffd'}
+    KAKAO_CLIENT_SECRET: ${env:KAKAO_CLIENT_SECRET, 'p2S1F966edBXJNk9pbCOwvHp7mAYqD33'}
+    KAKAO_REDIRECT_URI: ${env:KAKAO_REDIRECT_URI, 'https://<api-gateway-id>.execute-api.ap-northeast-2.amazonaws.com/dev/auth/kakao/callback'}
+    CORS_ORIGIN: ${env:CORS_ORIGIN, '*'}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+          Resource: "*"
+functions:
+  api:
+    handler: app.handler
+    timeout: 10
+    memorySize: 256
+    events:
+      - http:
+          path: /
+          method: GET
+          cors: true
+      - http:
+          path: /stocks
+          method: GET
+          cors: true
+          authorizer:
+            name: jwtAuthorizer
+            resultTtlInSeconds: 0
+      - http:
+          path: /stocks/marketdata
+          method: GET
+          cors: true
+          authorizer:
+            name: jwtAuthorizer
+            resultTtlInSeconds: 0
+      - http:
+          path: /stock/add
+          method: POST
+          cors: true
+          authorizer:
+            name: jwtAuthorizer
+            resultTtlInSeconds: 0
+      - http:
+          path: /stock/{symbol}/foreign
+          method: GET
+          cors: true
+      - http:
+          path: /stock/{symbol}
+          method: DELETE
+          cors: true
+          authorizer:
+            name: jwtAuthorizer
+            resultTtlInSeconds: 0
+      - http:
+          path: /indices
+          method: GET
+          cors: true
+      - http:
+          path: /auth/kakao/callback
+          method: GET
+          cors: true
+      - http:
+          path: /auth/kakao/callback
+          method: POST
+          cors: true
+      - http:
+          path: /auth/me
+          method: GET
+          cors: true
+          authorizer:
+            name: jwtAuthorizer
+            resultTtlInSeconds: 0
