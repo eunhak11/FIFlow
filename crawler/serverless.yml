@@ -1,0 +1,23 @@
+service: stock-crawler
+provider:
+  name: aws
+  runtime: python3.9
+  region: ap-northeast-2
+  environment:
+    DYNAMODB_TABLE: fiflow-users
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
+            - dynamodb:Query
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+          Resource: "*"
+functions:
+  crawler:
+    handler: crawler.main
+    events:
+      - schedule: cron(0 0 * * ? *)  # 매일 KST 09:00 실행
