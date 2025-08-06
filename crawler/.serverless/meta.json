@@ -1,0 +1,185 @@
+{
+  "/Users/eunhak/Desktop/PROJECTS/viveWeb/crawler/serverless.yml": {
+    "versionFramework": "4.17.2",
+    "servicePath": "/Users/eunhak/Desktop/PROJECTS/viveWeb/crawler/serverless.yml",
+    "serviceConfigFileName": "serverless.yml",
+    "service": {
+      "service": "stock-crawler",
+      "package": {
+        "include": [
+          "python_libs/**"
+        ],
+        "artifactsS3KeyDirname": "serverless/stock-crawler/dev/code-artifacts"
+      },
+      "provider": {
+        "name": "aws",
+        "runtime": "python3.9",
+        "region": "ap-northeast-2",
+        "architecture": "x86_64",
+        "deploymentBucket": "fiflowbucket",
+        "environment": {
+          "DYNAMODB_TABLE": "fiflow-users"
+        },
+        "iam": {
+          "role": {
+            "statements": [
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "dynamodb:PutItem",
+                  "dynamodb:Query",
+                  "dynamodb:Scan",
+                  "logs:CreateLogGroup",
+                  "logs:CreateLogStream",
+                  "logs:PutLogEvents"
+                ],
+                "Resource": "*"
+              }
+            ]
+          }
+        },
+        "stage": "dev",
+        "versionFunctions": true,
+        "deploymentBucketObject": {
+          "name": "fiflowbucket"
+        }
+      },
+      "functions": {
+        "mainCrawler": {
+          "handler": "lambda_main.main",
+          "timeout": 180,
+          "memorySize": 256,
+          "events": [],
+          "name": "stock-crawler-dev-mainCrawler"
+        },
+        "indexCrawler": {
+          "handler": "index_crawler.main",
+          "timeout": 180,
+          "memorySize": 256,
+          "events": [],
+          "name": "stock-crawler-dev-indexCrawler"
+        },
+        "stockInfoCrawler": {
+          "handler": "get_stock_info.main",
+          "timeout": 180,
+          "memorySize": 256,
+          "events": [],
+          "name": "stock-crawler-dev-stockInfoCrawler"
+        },
+        "getRealtimePrice": {
+          "handler": "get_realtime_price.main",
+          "timeout": 28,
+          "memorySize": 128,
+          "events": [
+            {
+              "http": {
+                "path": "realtime-price",
+                "method": "get",
+                "cors": true
+              }
+            }
+          ],
+          "name": "stock-crawler-dev-getRealtimePrice"
+        }
+      }
+    },
+    "provider": {
+      "name": "aws",
+      "runtime": "python3.9",
+      "region": "ap-northeast-2",
+      "architecture": "x86_64",
+      "deploymentBucket": "fiflowbucket",
+      "environment": {
+        "DYNAMODB_TABLE": "fiflow-users"
+      },
+      "iam": {
+        "role": {
+          "statements": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "dynamodb:PutItem",
+                "dynamodb:Query",
+                "dynamodb:Scan",
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Resource": "*"
+            }
+          ]
+        }
+      },
+      "stage": "dev",
+      "versionFunctions": true,
+      "deploymentBucketObject": {
+        "name": "fiflowbucket"
+      }
+    },
+    "dashboard": {
+      "isEnabledForService": false,
+      "requiredAuthentication": false,
+      "orgFeaturesInUse": null,
+      "orgObservabilityIntegrations": null,
+      "serviceAppId": null,
+      "serviceProvider": null,
+      "instanceParameters": null
+    },
+    "serviceRawFile": "service: stock-crawler\npackage:\n  include:\n    - python_libs/**\nprovider:\n  name: aws\n  runtime: python3.9\n  region: ap-northeast-2\n  architecture: x86_64\n  deploymentBucket:\n    name: fiflowbucket\n  environment:\n    DYNAMODB_TABLE: fiflow-users\n  iam:\n    role:\n      statements:\n        - Effect: Allow\n          Action:\n            - dynamodb:PutItem\n            - dynamodb:Query\n            - dynamodb:Scan\n            - logs:CreateLogGroup\n            - logs:CreateLogStream\n            - logs:PutLogEvents\n          Resource: \"*\"\nfunctions:\n  mainCrawler:\n    handler: lambda_main.main\n    timeout: 180\n    memorySize: 256\n  indexCrawler:\n    handler: index_crawler.main\n    timeout: 180\n    memorySize: 256\n  stockInfoCrawler:\n    handler: get_stock_info.main\n    timeout: 180\n    memorySize: 256\n  getRealtimePrice:\n    handler: get_realtime_price.main\n    timeout: 28\n    memorySize: 128\n    events:\n      - http:\n          path: realtime-price\n          method: get\n          cors: true",
+    "command": [
+      "invoke"
+    ],
+    "options": {
+      "log": true,
+      "data": "{\"symbols\": [\"005930\", \"034020\", \"035720\"]}",
+      "function": "mainCrawler"
+    },
+    "orgId": "6597af3a-dd61-47ef-b4cd-4df340ed97f1",
+    "orgName": "leh001111",
+    "userId": "Zyk9sxPKH8zVpt3Vdz",
+    "userName": "leh001111",
+    "serviceProviderAwsAccountId": "443370694043",
+    "serviceProviderAwsCfStackName": "stock-crawler-dev",
+    "serviceProviderAwsCfStackId": "arn:aws:cloudformation:ap-northeast-2:443370694043:stack/stock-crawler-dev/3c5a2780-728a-11f0-82d0-06aeca5b639f",
+    "serviceProviderAwsCfStackCreated": "2025-08-06T05:57:29.846Z",
+    "serviceProviderAwsCfStackUpdated": "2025-08-06T10:26:52.509Z",
+    "serviceProviderAwsCfStackStatus": "UPDATE_COMPLETE",
+    "serviceProviderAwsCfStackOutputs": [
+      {
+        "OutputKey": "StockInfoCrawlerLambdaFunctionQualifiedArn",
+        "OutputValue": "arn:aws:lambda:ap-northeast-2:443370694043:function:stock-crawler-dev-stockInfoCrawler:17",
+        "Description": "Current Lambda function version",
+        "ExportName": "sls-stock-crawler-dev-StockInfoCrawlerLambdaFunctionQualifiedArn"
+      },
+      {
+        "OutputKey": "MainCrawlerLambdaFunctionQualifiedArn",
+        "OutputValue": "arn:aws:lambda:ap-northeast-2:443370694043:function:stock-crawler-dev-mainCrawler:17",
+        "Description": "Current Lambda function version",
+        "ExportName": "sls-stock-crawler-dev-MainCrawlerLambdaFunctionQualifiedArn"
+      },
+      {
+        "OutputKey": "GetRealtimePriceLambdaFunctionQualifiedArn",
+        "OutputValue": "arn:aws:lambda:ap-northeast-2:443370694043:function:stock-crawler-dev-getRealtimePrice:2",
+        "Description": "Current Lambda function version",
+        "ExportName": "sls-stock-crawler-dev-GetRealtimePriceLambdaFunctionQualifiedArn"
+      },
+      {
+        "OutputKey": "IndexCrawlerLambdaFunctionQualifiedArn",
+        "OutputValue": "arn:aws:lambda:ap-northeast-2:443370694043:function:stock-crawler-dev-indexCrawler:17",
+        "Description": "Current Lambda function version",
+        "ExportName": "sls-stock-crawler-dev-IndexCrawlerLambdaFunctionQualifiedArn"
+      },
+      {
+        "OutputKey": "ServiceEndpoint",
+        "OutputValue": "https://p92d3s9t3a.execute-api.ap-northeast-2.amazonaws.com/dev",
+        "Description": "URL of the service endpoint",
+        "ExportName": "sls-stock-crawler-dev-ServiceEndpoint"
+      },
+      {
+        "OutputKey": "ServerlessDeploymentBucketName",
+        "OutputValue": "fiflowbucket",
+        "ExportName": "sls-stock-crawler-dev-ServerlessDeploymentBucketName"
+      }
+    ]
+  }
+}
