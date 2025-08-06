@@ -1,8 +1,14 @@
 service: stock-crawler
+package:
+  include:
+    - python_libs/**
 provider:
   name: aws
   runtime: python3.9
   region: ap-northeast-2
+  architecture: x86_64
+  deploymentBucket:
+    name: fiflowbucket
   environment:
     DYNAMODB_TABLE: fiflow-users
   iam:
@@ -12,12 +18,30 @@ provider:
           Action:
             - dynamodb:PutItem
             - dynamodb:Query
+            - dynamodb:Scan
             - logs:CreateLogGroup
             - logs:CreateLogStream
             - logs:PutLogEvents
           Resource: "*"
 functions:
-  crawler:
-    handler: crawler.main
+  mainCrawler:
+    handler: lambda_main.main
+    timeout: 180
+    memorySize: 256
+  indexCrawler:
+    handler: index_crawler.main
+    timeout: 180
+    memorySize: 256
+  stockInfoCrawler:
+    handler: get_stock_info.main
+    timeout: 180
+    memorySize: 256
+  getRealtimePrice:
+    handler: get_realtime_price.main
+    timeout: 28
+    memorySize: 128
     events:
-      - schedule: cron(0 0 * * ? *)  # 매일 KST 09:00 실행
+      - http:
+          path: realtime-price
+          method: get
+          cors: true
