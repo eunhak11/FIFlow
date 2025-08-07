@@ -19,11 +19,11 @@ const app = express();
 app.use(express.json());
 
 // 환경 변수
-const JWT_SECRET = process.env.JWT_SECRET || 'tmpIAkIQ3EkvMcpqFBCBM9XXQDe4sFPl';
-const KAKAO_CLIENT_ID = process.env.KAKAO_CLIENT_ID || 'a261f0e0564225d203c0a80ee62edffd';
-const KAKAO_CLIENT_SECRET = process.env.KAKAO_CLIENT_SECRET || 'p2S1F966edBXJNk9pbCOwvHp7mAYqD33';
-const KAKAO_REDIRECT_URI = process.env.KAKAO_REDIRECT_URI || 'https://<api-gateway-id>.execute-api.ap-northeast-2.amazonaws.com/dev/auth/kakao/callback';
-const CORS_ORIGIN = process.env.CORS_ORIGIN || '*';
+const JWT_SECRET = process.env.JWT_SECRET;
+const KAKAO_CLIENT_ID = process.env.KAKAO_CLIENT_ID;
+const KAKAO_CLIENT_SECRET = process.env.KAKAO_CLIENT_SECRET;
+const KAKAO_REDIRECT_URI = process.env.KAKAO_REDIRECT_URI;
+const CORS_ORIGIN = process.env.CORS_ORIGIN;
 
 // CORS 설정
 app.use((req, res, next) => {
@@ -37,21 +37,7 @@ app.use((req, res, next) => {
   }
 });
 
-// JWT 인증 미들웨어
-const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  if (!token) {
-    return res.status(401).json({ message: '액세스 토큰이 필요합니다.' });
-  }
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) {
-      return res.status(403).json({ message: '유효하지 않은 토큰입니다.' });
-    }
-    req.user = user;
-    next();
-  });
-};
+
 
 // 시장 시간 체크 (평일 09:00~16:00 KST)
 const isMarketOpen = () => {
@@ -77,10 +63,10 @@ app.get('/', (req, res) => {
 });
 
 // 사용자별 주식 조회
-app.get('/stocks', authenticateToken, async (req, res) => {
+app.get('/stocks', async (req, res) => {
   try {
-    console.log('사용자별 주식 조회:', req.user.kakaoId);
-    const items = await getUserWithStocks(req.user.kakaoId);
+    console.log('사용자별 주식 조회:', req.requestContext.authorizer.principalId);
+    const items = await getUserWithStocks(req.requestContext.authorizer.principalId);
     const stocks = items.filter(item => item.SK.startsWith('STOCK#')).map(item => ({
       symbol: item.symbol,
       name: item.name,
@@ -94,10 +80,10 @@ app.get('/stocks', authenticateToken, async (req, res) => {
 });
 
 // 주식 및 최신 MarketData 조회
-app.get('/stocks/marketdata', authenticateToken, async (req, res) => {
+app.get('/stocks/marketdata', async (req, res) => {
   try {
-    console.log('사용자별 Stocks MarketData 요청:', req.user.kakaoId);
-    const items = await getUserWithStocks(req.user.kakaoId);
+    console.log('사용자별 Stocks MarketData 요청:', req.requestContext.authorizer.principalId);
+    const items = await getUserWithStocks(req.requestContext.authorizer.principalId);
     const stocks = items.filter(item => item.SK.startsWith('STOCK#'));
     const result = [];
     for (const stock of stocks) {
@@ -127,7 +113,7 @@ app.get('/stocks/marketdata', authenticateToken, async (req, res) => {
 });
 
 // 종목 추가
-app.post('/stock/add', authenticateToken, async (req, res) => {
+app.post('/stock/add', async (req, res) => {
   const { symbol } = req.body;
   if (!symbol) {
     return res.status(400).json({ message: '종목 코드를 입력해주세요.' });
@@ -144,7 +130,7 @@ app.post('/stock/add', authenticateToken, async (req, res) => {
     if (existingStock.length > 0) {
       return res.status(200).json({ message: '이미 존재하는 종목입니다.', stockName, symbol });
     }
-    const stockResult = await createStock(req.user.kakaoId, symbol, stockName);
+    const stockResult = await createStock(req.requestContext.authorizer.principalId, symbol, stockName);
 
     // 시장 시간 내에서만 크롤러 트리거
     if (isMarketOpen()) {
@@ -199,13 +185,13 @@ app.get('/stock/:symbol/foreign', async (req, res) => {
 });
 
 // 주식 삭제
-app.delete('/stock/:symbol', authenticateToken, async (req, res) => {
+app.delete('/stock/:symbol', async (req, res) => {
   const { symbol } = req.params;
   try {
     const deleteStockParams = {
       TableName: process.env.DYNAMODB_TABLE || 'fiflow-users',
       Key: {
-        PK: `USER#${req.user.kakaoId}`,
+        PK: `USER#${req.requestContext.authorizer.principalId}`,
         SK: `STOCK#${symbol}`
       }
     };
@@ -376,9 +362,9 @@ app.post('/auth/kakao/callback', async (req, res) => {
 });
 
 // 인증된 사용자 정보 조회
-app.get('/auth/me', authenticateToken, async (req, res) => {
+app.get('/auth/me', async (req, res) => {
   try {
-    const user = await getUserByKakaoId(req.user.kakaoId);
+    const user = await getUserByKakaoId(req.requestContext.authorizer.principalId);
     if (!user[0]) {
       return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
     }
@@ -390,7 +376,7 @@ app.get('/auth/me', authenticateToken, async (req, res) => {
 });
 
 // 크롤러 트리거
-app.post('/crawler/trigger', authenticateToken, async (req, res) => {
+app.post('/crawler/trigger', async (req, res) => {
   try {
     if (!isMarketOpen()) {
       return res.status(400).json({ message: '주식 시장 시간(평일 09:00~16:00 KST) 외에는 크롤러를 실행할 수 없습니다.' });

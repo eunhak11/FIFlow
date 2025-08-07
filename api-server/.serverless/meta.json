@@ -1,0 +1,212 @@
+{
+  "/Users/eunhak/Desktop/PROJECTS/viveWeb/api-server/serverless.yml": {
+    "versionFramework": "4.18.0",
+    "servicePath": "/Users/eunhak/Desktop/PROJECTS/viveWeb/api-server/serverless.yml",
+    "serviceConfigFileName": "serverless.yml",
+    "service": {
+      "service": "api-server",
+      "provider": {
+        "name": "aws",
+        "runtime": "nodejs18.x",
+        "region": "ap-northeast-2",
+        "environment": {
+          "DYNAMODB_TABLE": "fiflow-users",
+          "JWT_SECRET": "<REDACTED>",
+          "KAKAO_CLIENT_ID": "a261f0e0564225d203c0a80ee62edffd",
+          "KAKAO_CLIENT_SECRET": "<REDACTED>",
+          "KAKAO_REDIRECT_URI": "http://localhost:3000/auth/kakao/callback",
+          "CORS_ORIGIN": "${env:CORS_ORIGIN}"
+        },
+        "iam": {
+          "role": {
+            "statements": [
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "dynamodb:PutItem",
+                  "dynamodb:Query",
+                  "dynamodb:Scan",
+                  "dynamodb:UpdateItem",
+                  "dynamodb:DeleteItem",
+                  "logs:CreateLogGroup",
+                  "logs:CreateLogStream",
+                  "logs:PutLogEvents"
+                ],
+                "Resource": "*"
+              }
+            ]
+          }
+        }
+      },
+      "functions": {
+        "api": {
+          "handler": "app.handler",
+          "timeout": 10,
+          "memorySize": 256,
+          "events": [
+            {
+              "http": {
+                "path": "/",
+                "method": "GET",
+                "cors": true
+              }
+            },
+            {
+              "http": {
+                "path": "/stocks",
+                "method": "GET",
+                "cors": true,
+                "authorizer": {
+                  "name": "jwtAuthorizer",
+                  "resultTtlInSeconds": 0
+                }
+              }
+            },
+            {
+              "http": {
+                "path": "/stocks/marketdata",
+                "method": "GET",
+                "cors": true,
+                "authorizer": {
+                  "name": "jwtAuthorizer",
+                  "resultTtlInSeconds": 0
+                }
+              }
+            },
+            {
+              "http": {
+                "path": "/stock/add",
+                "method": "POST",
+                "cors": true,
+                "authorizer": {
+                  "name": "jwtAuthorizer",
+                  "resultTtlInSeconds": 0
+                }
+              }
+            },
+            {
+              "http": {
+                "path": "/stock/{symbol}/foreign",
+                "method": "GET",
+                "cors": true
+              }
+            },
+            {
+              "http": {
+                "path": "/stock/{symbol}",
+                "method": "DELETE",
+                "cors": true,
+                "authorizer": {
+                  "name": "jwtAuthorizer",
+                  "resultTtlInSeconds": 0
+                }
+              }
+            },
+            {
+              "http": {
+                "path": "/indices",
+                "method": "GET",
+                "cors": true
+              }
+            },
+            {
+              "http": {
+                "path": "/auth/kakao/callback",
+                "method": "GET",
+                "cors": true
+              }
+            },
+            {
+              "http": {
+                "path": "/auth/kakao/callback",
+                "method": "POST",
+                "cors": true
+              }
+            },
+            {
+              "http": {
+                "path": "/auth/me",
+                "method": "GET",
+                "cors": true,
+                "authorizer": {
+                  "name": "jwtAuthorizer",
+                  "resultTtlInSeconds": 0
+                }
+              }
+            }
+          ]
+        }
+      },
+      "package": {
+        "exclude": [
+          "migrations/**",
+          "Dockerfile",
+          "env.server.template",
+          "Readme",
+          "models/Info.txt"
+        ]
+      }
+    },
+    "provider": {
+      "name": "aws",
+      "runtime": "nodejs18.x",
+      "region": "ap-northeast-2",
+      "environment": {
+        "DYNAMODB_TABLE": "fiflow-users",
+        "JWT_SECRET": "<REDACTED>",
+        "KAKAO_CLIENT_ID": "a261f0e0564225d203c0a80ee62edffd",
+        "KAKAO_CLIENT_SECRET": "<REDACTED>",
+        "KAKAO_REDIRECT_URI": "http://localhost:3000/auth/kakao/callback",
+        "CORS_ORIGIN": "${env:CORS_ORIGIN}"
+      },
+      "iam": {
+        "role": {
+          "statements": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "dynamodb:PutItem",
+                "dynamodb:Query",
+                "dynamodb:Scan",
+                "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem",
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Resource": "*"
+            }
+          ]
+        }
+      }
+    },
+    "dashboard": {
+      "isEnabledForService": false,
+      "requiredAuthentication": false,
+      "orgFeaturesInUse": null,
+      "orgObservabilityIntegrations": null,
+      "serviceAppId": null,
+      "serviceProvider": null,
+      "instanceParameters": null
+    },
+    "error": {
+      "message": "Cannot resolve '${env:CORS_ORIGIN}' variable at 'provider.environment.CORS_ORIGIN'. No value is available for this variable, and no default value was provided. Please check your variable definitions or provide a default value.",
+      "stack": "Error: Cannot resolve '${env:CORS_ORIGIN}' variable at 'provider.environment.CORS_ORIGIN'. No value is available for this variable, and no default value was provided. Please check your variable definitions or provide a default value.\n    at _ResolverManager.resolve (file:///Users/eunhak/.serverless/releases/4.18.0/package/dist/sf-core.js:809:31911)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async #handlePlaceholderNode (file:///Users/eunhak/.serverless/releases/4.18.0/package/dist/sf-core.js:809:30118)\n    at async file:///Users/eunhak/.serverless/releases/4.18.0/package/dist/sf-core.js:809:27990\n    at async processNodeAndHandleCompletion (file:///Users/eunhak/.serverless/releases/4.18.0/package/dist/sf-core.js:809:16769)",
+      "code": "MISSING_VARIABLE_RESULT"
+    },
+    "serviceRawFile": "service: api-server\nprovider:\n  name: aws\n  runtime: nodejs18.x\n  region: ap-northeast-2\n  environment:\n    DYNAMODB_TABLE: fiflow-users\n    JWT_SECRET: ${env:JWT_SECRET}\n    KAKAO_CLIENT_ID: ${env:KAKAO_CLIENT_ID}\n    KAKAO_CLIENT_SECRET: ${env:KAKAO_CLIENT_SECRET}\n    KAKAO_REDIRECT_URI: ${env:KAKAO_REDIRECT_URI}\n    CORS_ORIGIN: ${env:CORS_ORIGIN}\n  iam:\n    role:\n      statements:\n        - Effect: Allow\n          Action:\n            - dynamodb:PutItem\n            - dynamodb:Query\n            - dynamodb:Scan\n            - dynamodb:UpdateItem\n            - dynamodb:DeleteItem\n            - logs:CreateLogGroup\n            - logs:CreateLogStream\n            - logs:PutLogEvents\n          Resource: \"*\"\nfunctions:\n  api:\n    handler: app.handler\n    timeout: 10\n    memorySize: 256\n    events:\n      - http:\n          path: /\n          method: GET\n          cors: true\n      - http:\n          path: /stocks\n          method: GET\n          cors: true\n          authorizer:\n            name: jwtAuthorizer\n            resultTtlInSeconds: 0\n      - http:\n          path: /stocks/marketdata\n          method: GET\n          cors: true\n          authorizer:\n            name: jwtAuthorizer\n            resultTtlInSeconds: 0\n      - http:\n          path: /stock/add\n          method: POST\n          cors: true\n          authorizer:\n            name: jwtAuthorizer\n            resultTtlInSeconds: 0\n      - http:\n          path: /stock/{symbol}/foreign\n          method: GET\n          cors: true\n      - http:\n          path: /stock/{symbol}\n          method: DELETE\n          cors: true\n          authorizer:\n            name: jwtAuthorizer\n            resultTtlInSeconds: 0\n      - http:\n          path: /indices\n          method: GET\n          cors: true\n      - http:\n          path: /auth/kakao/callback\n          method: GET\n          cors: true\n      - http:\n          path: /auth/kakao/callback\n          method: POST\n          cors: true\n      - http:\n          path: /auth/me\n          method: GET\n          cors: true\n          authorizer:\n            name: jwtAuthorizer\n            resultTtlInSeconds: 0\npackage:\n  exclude:\n    - migrations/**\n    - Dockerfile\n    - env.server.template\n    - Readme\n    - models/Info.txt",
+    "command": [
+      "deploy"
+    ],
+    "options": {},
+    "orgId": "6597af3a-dd61-47ef-b4cd-4df340ed97f1",
+    "orgName": "leh001111",
+    "userId": "Zyk9sxPKH8zVpt3Vdz",
+    "userName": "leh001111",
+    "serviceProviderAwsCfStackId": null,
+    "serviceProviderAwsCfStackCreated": null,
+    "serviceProviderAwsCfStackUpdated": null,
+    "serviceProviderAwsCfStackStatus": null,
+    "serviceProviderAwsCfStackOutputs": null
+  }
+}
