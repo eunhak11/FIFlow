@@ -5,11 +5,11 @@ provider:
   region: ap-northeast-2
   environment:
     DYNAMODB_TABLE: fiflow-users
-    JWT_SECRET: ${env:JWT_SECRET, 'tmpIAkIQ3EkvMcpqFBCBM9XXQDe4sFPl'}
-    KAKAO_CLIENT_ID: ${env:KAKAO_CLIENT_ID, 'a261f0e0564225d203c0a80ee62edffd'}
-    KAKAO_CLIENT_SECRET: ${env:KAKAO_CLIENT_SECRET, 'p2S1F966edBXJNk9pbCOwvHp7mAYqD33'}
-    KAKAO_REDIRECT_URI: ${env:KAKAO_REDIRECT_URI, 'https://<api-gateway-id>.execute-api.ap-northeast-2.amazonaws.com/dev/auth/kakao/callback'}
-    CORS_ORIGIN: ${env:CORS_ORIGIN, '*'}
+    JWT_SECRET: ${env:JWT_SECRET}
+    KAKAO_CLIENT_ID: ${env:KAKAO_CLIENT_ID}
+    KAKAO_CLIENT_SECRET: ${env:KAKAO_CLIENT_SECRET}
+    KAKAO_REDIRECT_URI: ${env:KAKAO_REDIRECT_URI}
+    CORS_ORIGIN: ${env:CORS_ORIGIN}
   iam:
     role:
       statements:
@@ -85,3 +85,18 @@ functions:
           authorizer:
             name: jwtAuthorizer
             resultTtlInSeconds: 0
+  jwtAuthorizer:
+    handler: authorizer.handler
+    memorySize: 128
+    timeout: 5
+
+plugins:
+  - serverless-dotenv-plugin
+
+package:
+  exclude:
+    - migrations/**
+    - Dockerfile
+    - env.server.template
+    - Readme
+    - models/Info.txt
