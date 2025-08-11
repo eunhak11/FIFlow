@@ -1,7 +1,4 @@
-import sys
-import os
-sys.path.append(os.path.join(os.path.dirname(__file__), 'python_libs'))
-
+# lambda_main.py
 import requests
 from bs4 import BeautifulSoup
 import datetime
@@ -9,23 +6,32 @@ import re
 import boto3
 from botocore.exceptions import ClientError
 import logging
-import json
-import traceback
-from db import create_market_data
+from db import create_market_data, create_index_data
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def get_stocks_from_db():
-    """DynamoDB에서 주식 목록 조회"""
+def get_stocks_from_db(userId=None):
+    """DynamoDB에서 주식 목록 조회: 사용자별 Query 사용"""
     try:
         dynamodb = boto3.resource('dynamodb', region_name='ap-northeast-2')
         table = dynamodb.Table('fiflow-users')
-        response = table.scan(
-            FilterExpression='SK BEGINS_WITH :sk',
-            ExpressionAttributeValues={':sk': 'STOCK#'}
-        )
+        if userId:
+            # Query: 특정 사용자 주식 목록 조회
+            response = table.query(
+                KeyConditionExpression='PK = :pk AND begins_with(SK, :sk)',
+                ExpressionAttributeValues={
+                    ':pk': f'USER#{userId}',
+                    ':sk': 'STOCK#'
+                }
+            )
+        else:
+            # 전체 주식 목록 (Scan 유지, 기본)
+            response = table.scan(
+                FilterExpression='begins_with(SK, :sk)',
+                ExpressionAttributeValues={':sk': 'STOCK#'}
+            )
         stocks = [(item['symbol'], item['stockName']) for item in response.get('Items', [])]
         if not stocks:
             logger.info("데이터가 존재하지 않습니다.")
@@ -60,7 +66,7 @@ def get_market_data(symbol):
             "changeRate": change_rate
         }
     except Exception as e:
-        print(f"[{symbol}] 크롤링 오류: {e}")
+        logger.error(f"[{symbol}] 크롤링 오류: {e}")
         return None
 
 def get_stock_name_from_symbol(symbol):
@@ -79,26 +85,35 @@ def get_stock_name_from_symbol(symbol):
         return None
 
 def get_foreigner_net_buy(symbol):
-    """외국인 순매매량 및 날짜 크롤링 (초기 버전)"""
+    """외국인 순매매량 및 날짜 크롤링 (최근 8일 데이터)"""
     url = f"https://finance.naver.com/item/frgn.naver?code={symbol}"
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/91.0.4472.124'}
     try:
         response = requests.get(url, headers=headers)
         response.raise_for_status()
         soup = BeautifulSoup(response.text, 'lxml')
-        rows = soup.select("div.inner_sub table.type2 tr[onmouseover]")[:8]
+        # 테이블에서 데이터 행 선택 (최근 8일 데이터)
+        rows = soup.select("table.type2 tbody tr")[1:9]  # 첫 번째 행은 헤더, 상위 8개 데이터 행 선택
         foreigner_data = []
         for row in rows:
-            date = row.select('td')[0].text.strip()
-            net_buy = int(row.select('td')[6].text.strip().replace(",", "") or 0)
+            cols = row.select('td')
+            if len(cols) < 7:  # 데이터가 부족한 경우 스킵
+                continue
+            date = cols[0].text.strip()
+            net_buy_text = cols[6].text.strip().replace(",", "")
+            try:
+                net_buy = int(net_buy_text) if net_buy_text else 0
+            except ValueError:
+                net_buy = 0
             foreigner_data.append({'date': date, 'net_buy': net_buy})
+        # 데이터가 8일 미만일 경우 빈 데이터로 채움
         while len(foreigner_data) < 8:
             foreigner_data.append({'date': '', 'net_buy': 0})
         logger.info(f"[{symbol}] 외국인 순매매량 데이터: {len(foreigner_data)}일치")
-        return foreigner_data
+        return foreigner_data[:8]  # 최신 8일 데이터만 반환
     except Exception as e:
         logger.error(f"[{symbol}] 외국인 데이터 오류: {e}")
-        return [{'date': '', 'net_buy': 0} for _ in range(8)]
+        return [{'date': '', 'net_buy': 0}] * 8
 
 def main(event=None, context=None):
     """메인 실행 함수: Lambda 이벤트로 심볼 목록 처리"""
@@ -107,7 +122,7 @@ def main(event=None, context=None):
         stocks = [(s, get_stock_name_from_symbol(s)) for s in symbols] if symbols else get_stocks_from_db()
         if not stocks:
             logger.info("크롤링할 주식 목록이 없습니다.")
-            return {"statusCode": 200, "body": json.dumps([])}
+            return {"statusCode": 200, "body": []}
         logger.info(f"{len(stocks)}개의 주식 정보를 크롤링합니다.")
         results = []
         for symbol, name in stocks:
@@ -131,11 +146,10 @@ def main(event=None, context=None):
             else:
                 logger.error(f"[{name}({symbol})] 크롤링 실패")
                 results.append({"symbol": symbol, "status": "failed"})
-        return {"statusCode": 200, "body": json.dumps(results)}
+        return {"statusCode": 200, "body": results}
     except Exception as e:
         logger.error(f"오류 발생: {e}")
-        traceback.print_exc()
-        return {"statusCode": 500, "body": json.dumps({"error": str(e)})}
+        return {"statusCode": 500, "body": str(e)}
 
 if __name__ == "__main__":
     main()

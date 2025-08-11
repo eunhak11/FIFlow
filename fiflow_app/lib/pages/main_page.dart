@@ -1,3 +1,5 @@
+// fiflow_app/lib/pages/main_page.dart
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -23,9 +25,9 @@ class _MainPageState extends State<MainPage> {
   List<String> _favoriteStocks = []; // 즐겨찾기된 주식들의 symbol을 저장
 
   // API 서버 URL 설정
-  String get _apiBaseUrl {
-    return 'http://172.30.1.14:3000'; // 실제 서버 IP
-  }
+ String get _apiBaseUrl {
+  return dotenv.env['API_BASE_URL'] ?? '';
+}
 
   @override
   void initState() {
@@ -85,26 +87,17 @@ class _MainPageState extends State<MainPage> {
 
   Future<void> _fetchStocksWithMarketData() async {
     try {
-      final headers = await AuthService.getAuthHeaders();
+      final headers = await AuthService.getAuthHeaders(context); // context 전달
       final response = await http.get(
         Uri.parse('$_apiBaseUrl/stocks/marketdata'),
-        headers: headers
+        headers: headers,
       );
-      
-      if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        setState(() {
-          _stocksWithMarketData = data.cast<Map<String, dynamic>>();
-          _isLoading = false;
-        });
-      } else {
-        print('주식 데이터 조회 실패: ${response.statusCode}');
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      // ... 나머지 코드
     } catch (e) {
       print('주식 데이터 조회 오류: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('주식 데이터 조회 오류: $e')),
+      );
       setState(() {
         _isLoading = false;
       });
@@ -113,6 +106,20 @@ class _MainPageState extends State<MainPage> {
 
   Future<void> _fetchIndices() async {
     try {
+      print('Fetching indices from: $_apiBaseUrl/indices'); // 디버그 로그 추가
+
+      // 지수 크롤러 트리거
+      final headers = await AuthService.getAuthHeaders(context); // 인증 헤더 가져오기
+      final triggerResponse = await http.post(
+        Uri.parse('$_apiBaseUrl/trigger-index-crawler'),
+        headers: headers,
+      );
+
+      if (triggerResponse.statusCode != 200) {
+        print('지수 크롤러 트리거 실패: ${triggerResponse.statusCode}, ${triggerResponse.body}');
+        // 실패하더라도 지수 데이터 가져오기는 시도
+      }
+
       final response = await http.get(Uri.parse('$_apiBaseUrl/indices'));
       
       if (response.statusCode == 200) {

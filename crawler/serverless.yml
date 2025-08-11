@@ -1,7 +1,14 @@
 service: stock-crawler
 package:
-  include:
-    - python_libs/**
+  individually: true
+  patterns:
+    - '!node_modules/**'
+    - '!venv/**'
+    - '!__pycache__/**'
+    - '!*.pyc'
+    - '!*.bak'
+    - '*.py'
+
 provider:
   name: aws
   runtime: python3.9
@@ -13,29 +20,36 @@ provider:
     DYNAMODB_TABLE: fiflow-users
   iam:
     role:
-      statements:
-        - Effect: Allow
-          Action:
-            - dynamodb:PutItem
-            - dynamodb:Query
-            - dynamodb:Scan
-            - logs:CreateLogGroup
-            - logs:CreateLogStream
-            - logs:PutLogEvents
-          Resource: "*"
+      managedPolicies:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+
 functions:
   mainCrawler:
     handler: lambda_main.main
-    timeout: 180
+    timeout: 29
     memorySize: 256
+    layers:
+      - arn:aws:lambda:ap-northeast-2:443370694043:layer:stock-crawler-dev-common-dependencies:4
+      - arn:aws:lambda:ap-northeast-2:443370694043:layer:stock-crawler-dev-crawling-dependencies:1
   indexCrawler:
     handler: index_crawler.main
-    timeout: 180
+    timeout: 29
     memorySize: 256
+    events:
+      - http:
+          path: trigger-index-crawl
+          method: post
+          cors: true
+    layers:
+      - arn:aws:lambda:ap-northeast-2:443370694043:layer:stock-crawler-dev-common-dependencies:4
   stockInfoCrawler:
     handler: get_stock_info.main
-    timeout: 180
+    timeout: 29
     memorySize: 256
+    layers:
+      - arn:aws:lambda:ap-northeast-2:443370694043:layer:stock-crawler-dev-common-dependencies:4
+      - arn:aws:lambda:ap-northeast-2:443370694043:layer:stock-crawler-dev-crawling-dependencies:1
   getRealtimePrice:
     handler: get_realtime_price.main
     timeout: 28
@@ -45,3 +59,10 @@ functions:
           path: realtime-price
           method: get
           cors: true
+    layers:
+      - arn:aws:lambda:ap-northeast-2:443370694043:layer:stock-crawler-dev-common-dependencies:4
+
+custom:
+  pythonRequirements:
+    dockerizePip: false
+    layer: []

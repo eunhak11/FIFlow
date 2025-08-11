@@ -1,3 +1,5 @@
+// fiflow_app/lib/pages/login_page.dart
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/material.dart';
 import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 import 'package:http/http.dart' as http;
@@ -37,7 +39,7 @@ class _LoginPageState extends State<LoginPage> {
       
       // 백엔드 API 호출
       final response = await http.post(
-        Uri.parse('http://172.30.1.14:3000/auth/kakao/callback'),
+        Uri.parse('${dotenv.env['API_BASE_URL']}/auth/kakao/callback'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'kakaoId': user.id.toString(),

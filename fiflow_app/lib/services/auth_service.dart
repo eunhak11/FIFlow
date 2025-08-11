@@ -2,13 +2,19 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
+import 'package:flutter/material.dart';
 
 class AuthService {
   static const _storage = FlutterSecureStorage();
   static const String _tokenKey = 'jwt_token';
-  
+
   static String get _baseUrl {
-    return dotenv.env['API_BASE_URL'] ?? 'http://172.30.1.14:3000';
+    final apiBaseUrl = dotenv.env['API_BASE_URL'];
+    if (apiBaseUrl == null || apiBaseUrl.isEmpty) {
+      throw Exception('API_BASE_URL is not set in .env file');
+    }
+    return apiBaseUrl;
   }
 
   // JWT 토큰 저장
@@ -30,12 +36,13 @@ class AuthService {
   static Future<bool> isLoggedIn() async {
     final token = await getToken();
     if (token == null) return false;
-    
+
     try {
       final response = await http.get(
         Uri.parse('$_baseUrl/auth/me'),
-        headers: {'Authorization': 'Bearer $token'}
+        headers: {'Authorization': 'Bearer $token'},
       );
+      print('로그인 상태 확인 응답: ${response.statusCode}, ${response.body}'); // 디버깅 로그
       return response.statusCode == 200;
     } catch (e) {
       print('로그인 상태 확인 오류: $e');
@@ -47,13 +54,13 @@ class AuthService {
   static Future<Map<String, dynamic>?> getUserInfo() async {
     final token = await getToken();
     if (token == null) return null;
-    
+
     try {
       final response = await http.get(
         Uri.parse('$_baseUrl/auth/me'),
-        headers: {'Authorization': 'Bearer $token'}
+        headers: {'Authorization': 'Bearer $token'},
       );
-      
+      print('사용자 정보 조회 응답: ${response.statusCode}, ${response.body}'); // 디버깅 로그
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       }
@@ -64,11 +71,40 @@ class AuthService {
   }
 
   // 인증 헤더 가져오기
-  static Future<Map<String, String>> getAuthHeaders() async {
-    final token = await getToken();
-    return {
-      'Content-Type': 'application/json',
-      if (token != null) 'Authorization': 'Bearer $token',
-    };
+  static Future<Map<String, String>> getAuthHeaders(BuildContext context) async {
+    try {
+      final user = await UserApi.instance.me();
+      print('✅ 카카오 사용자 정보: ${user.id}');
+      print('사용자 상세 정보: ${user.properties?['nickname']}');
+
+      final response = await http.post(
+        Uri.parse('$_baseUrl/auth/kakao/callback'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'kakaoId': user.id.toString(),
+          'nickname': user.properties?['nickname'] ?? '사용자',
+          'email': user.kakaoAccount?.email,
+        }),
+      );
+
+      print('카카오 로그인 요청 응답: ${response.statusCode}, ${response.body}'); // 디버깅 로그
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final token = data['token'];
+        await saveToken(token); // 토큰 저장
+        return {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'};
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('카카오 로그인 실패: ${response.statusCode}, ${response.body}')),
+        );
+        throw Exception('카카오 로그인 실패: ${response.statusCode}, ${response.body}');
+      }
+    } catch (e) {
+      print('로그인 오류: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('로그인 오류: $e')),
+      );
+      throw Exception('로그인 오류: $e');
+    }
   }
-} 
+}

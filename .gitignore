@@ -33,7 +33,7 @@ fiflow_app/ios/Pods/
 **/android/build/
 **/android/build/reports/
 **/android/build/reports/problems/
-**/android/build/reports/problems/problems-report.html
+**/android/reports/problems/problems-report.html
 
 # IDE
 .vscode/
@@ -41,6 +41,7 @@ fiflow_app/ios/Pods/
 *.swp
 *.swo
 *~
+*.iml
 
 # OS
 .DS_Store
@@ -54,6 +55,9 @@ Thumbs.db
 # Logs
 *.log
 
+# Archives
+*.zip
+
 # Database
 *.db
 *.sqlite
@@ -66,7 +70,8 @@ Thumbs.db
 .env.local
 .env.development.local
 .env.test.local
-.env.production.local 
+.env.production.local
+**/assets/.env 
 
 # Serverless artifacts
-api-server/.serverless/
+.serverless/

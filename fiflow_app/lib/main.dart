@@ -1,7 +1,9 @@
+// fiflow_app/lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:http/http.dart' as http; // http 임포트 추가
 import 'pages/main_page.dart';
 import 'pages/manage_stocks_page.dart';
 import 'pages/login_page.dart';
@@ -11,15 +13,25 @@ import 'widgets/splash_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
+  // 환경변수 로드
+  await dotenv.load(fileName: "assets/.env");
+  print('Loaded API_ID: ${dotenv.env['API_ID']}'); // 디버그 로그 추가
+  print('Loaded API_BASE_URL: ${dotenv.env['API_BASE_URL']}'); // API_BASE_URL 디버그 로그 추가
+
+  // 인터넷 연결 테스트
+  try {
+    final testResponse = await http.get(Uri.parse('https://google.com'));
+    print('Google.com test status: ${testResponse.statusCode}');
+  } catch (e) {
+    print('Google.com test failed: $e');
+  }
+
   // Hive 초기화
   await Hive.initFlutter();
   
-  // 환경변수 로드
-  await dotenv.load(fileName: "assets/.env");
-  
   KakaoSdk.init(
-    nativeAppKey: dotenv.env['KAKAO_NATIVE_APP_KEY'] ?? '17c60462c6fff4b87a4223e3038abf4e',
-    javaScriptAppKey: dotenv.env['KAKAO_JAVASCRIPT_APP_KEY'] ?? '2e82af882e2d60718781f0c13628a836',
+    nativeAppKey: dotenv.env['KAKAO_NATIVE_APP_KEY'],
+    javaScriptAppKey: dotenv.env['KAKAO_JAVASCRIPT_APP_KEY'],
   );
   runApp(const MyApp());
 }

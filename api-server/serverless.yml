@@ -1,8 +1,10 @@
+# api-server/serverless.yml
 service: api-server
 provider:
   name: aws
-  runtime: nodejs18.x
+  runtime: nodejs20.x
   region: ap-northeast-2
+  memorySize: 256
   environment:
     DYNAMODB_TABLE: fiflow-users
     JWT_SECRET: ${env:JWT_SECRET}
@@ -15,88 +17,38 @@ provider:
       statements:
         - Effect: Allow
           Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            - logs:TagResource
+          Resource: arn:aws:logs:ap-northeast-2:443370694043:log-group:/aws/lambda/api-server-dev*:*
+        - Effect: Allow
+          Action:
             - dynamodb:PutItem
             - dynamodb:Query
             - dynamodb:Scan
             - dynamodb:UpdateItem
             - dynamodb:DeleteItem
-            - logs:CreateLogGroup
-            - logs:CreateLogStream
-            - logs:PutLogEvents
-          Resource: "*"
-functions:
-  api:
-    handler: app.handler
-    timeout: 10
-    memorySize: 256
-    events:
-      - http:
-          path: /
-          method: GET
-          cors: true
-      - http:
-          path: /stocks
-          method: GET
-          cors: true
-          authorizer:
-            name: jwtAuthorizer
-            resultTtlInSeconds: 0
-      - http:
-          path: /stocks/marketdata
-          method: GET
-          cors: true
-          authorizer:
-            name: jwtAuthorizer
-            resultTtlInSeconds: 0
-      - http:
-          path: /stock/add
-          method: POST
-          cors: true
-          authorizer:
-            name: jwtAuthorizer
-            resultTtlInSeconds: 0
-      - http:
-          path: /stock/{symbol}/foreign
-          method: GET
-          cors: true
-      - http:
-          path: /stock/{symbol}
-          method: DELETE
-          cors: true
-          authorizer:
-            name: jwtAuthorizer
-            resultTtlInSeconds: 0
-      - http:
-          path: /indices
-          method: GET
-          cors: true
-      - http:
-          path: /auth/kakao/callback
-          method: GET
-          cors: true
-      - http:
-          path: /auth/kakao/callback
-          method: POST
-          cors: true
-      - http:
-          path: /auth/me
-          method: GET
-          cors: true
-          authorizer:
-            name: jwtAuthorizer
-            resultTtlInSeconds: 0
-  jwtAuthorizer:
-    handler: authorizer.handler
-    memorySize: 128
-    timeout: 5
-
-plugins:
-  - serverless-dotenv-plugin
+          Resource:
+            - arn:aws:dynamodb:ap-northeast-2:443370694043:table/fiflow-users
+            - arn:aws:dynamodb:ap-northeast-2:443370694043:table/fiflow-users/index/*
+        - Effect: Allow
+          Action: lambda:InvokeFunction
+          Resource:
+            - arn:aws:lambda:ap-northeast-2:443370694043:function:stock-crawler-dev-mainCrawler
 
 package:
-  exclude:
-    - migrations/**
-    - Dockerfile
-    - env.server.template
-    - Readme
-    - models/Info.txt
+  individually: true
+  patterns:
+    - '!node_modules/**'
+    - 'node_modules/**'
+
+plugins:
+
+functions:
+  app:
+    handler: app.handler
+    events:
+      - httpApi:
+          path: '/{proxy+}'
+          method: ANY

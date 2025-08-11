@@ -1,8 +1,4 @@
 # crawler/index_crawler.py
-import sys
-import os
-sys.path.append(os.path.join(os.path.dirname(__file__), 'python_libs'))
-
 import requests
 import datetime
 import json
@@ -18,7 +14,7 @@ def get_index_data(name):
     """네이버 금융에서 지수 데이터 크롤링"""
     url = "https://polling.finance.naver.com/api/realtime?query=SERVICE_INDEX:KOSPI,KOSDAQ,KPI200"
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/91.0.4472.124'}
-    for attempt in range(3):  # 3회 재시도
+    for attempt in range(2):  # 2회 재시도
         try:
             response = requests.get(url, headers=headers, timeout=10)
             response.raise_for_status()

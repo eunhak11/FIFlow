@@ -83,18 +83,6 @@
                       "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/stock-crawler-dev*:*:*"
                     }
                   ]
-                },
-                {
-                  "Effect": "Allow",
-                  "Action": [
-                    "dynamodb:PutItem",
-                    "dynamodb:Query",
-                    "dynamodb:Scan",
-                    "logs:CreateLogGroup",
-                    "logs:CreateLogStream",
-                    "logs:PutLogEvents"
-                  ],
-                  "Resource": "*"
                 }
               ]
             }
@@ -113,7 +101,11 @@
               "lambdaRole"
             ]
           ]
-        }
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+          "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess"
+        ]
       }
     },
     "MainCrawlerLambdaFunction": {
@@ -121,13 +113,13 @@
       "Properties": {
         "Code": {
           "S3Bucket": "fiflowbucket",
-          "S3Key": "serverless/stock-crawler/dev/1754476010162-2025-08-06T10:26:50.162Z/stock-crawler.zip"
+          "S3Key": "serverless/stock-crawler/dev/1754915571655-2025-08-11T12:32:51.655Z/mainCrawler.zip"
         },
         "Handler": "lambda_main.main",
         "Runtime": "python3.9",
         "FunctionName": "stock-crawler-dev-mainCrawler",
         "MemorySize": 256,
-        "Timeout": 180,
+        "Timeout": 29,
         "Architectures": [
           "x86_64"
         ],
@@ -141,7 +133,11 @@
             "IamRoleLambdaExecution",
             "Arn"
           ]
-        }
+        },
+        "Layers": [
+          "arn:aws:lambda:ap-northeast-2:443370694043:layer:stock-crawler-dev-common-dependencies:4",
+          "arn:aws:lambda:ap-northeast-2:443370694043:layer:stock-crawler-dev-crawling-dependencies:1"
+        ]
       },
       "DependsOn": [
         "MainCrawlerLogGroup"
@@ -152,13 +148,13 @@
       "Properties": {
         "Code": {
           "S3Bucket": "fiflowbucket",
-          "S3Key": "serverless/stock-crawler/dev/1754476010162-2025-08-06T10:26:50.162Z/stock-crawler.zip"
+          "S3Key": "serverless/stock-crawler/dev/1754915571655-2025-08-11T12:32:51.655Z/indexCrawler.zip"
         },
         "Handler": "index_crawler.main",
         "Runtime": "python3.9",
         "FunctionName": "stock-crawler-dev-indexCrawler",
         "MemorySize": 256,
-        "Timeout": 180,
+        "Timeout": 29,
         "Architectures": [
           "x86_64"
         ],
@@ -172,7 +168,10 @@
             "IamRoleLambdaExecution",
             "Arn"
           ]
-        }
+        },
+        "Layers": [
+          "arn:aws:lambda:ap-northeast-2:443370694043:layer:stock-crawler-dev-common-dependencies:4"
+        ]
       },
       "DependsOn": [
         "IndexCrawlerLogGroup"
@@ -183,13 +182,13 @@
       "Properties": {
         "Code": {
           "S3Bucket": "fiflowbucket",
-          "S3Key": "serverless/stock-crawler/dev/1754476010162-2025-08-06T10:26:50.162Z/stock-crawler.zip"
+          "S3Key": "serverless/stock-crawler/dev/1754915571655-2025-08-11T12:32:51.655Z/stockInfoCrawler.zip"
         },
         "Handler": "get_stock_info.main",
         "Runtime": "python3.9",
         "FunctionName": "stock-crawler-dev-stockInfoCrawler",
         "MemorySize": 256,
-        "Timeout": 180,
+        "Timeout": 29,
         "Architectures": [
           "x86_64"
         ],
@@ -203,7 +202,11 @@
             "IamRoleLambdaExecution",
             "Arn"
           ]
-        }
+        },
+        "Layers": [
+          "arn:aws:lambda:ap-northeast-2:443370694043:layer:stock-crawler-dev-common-dependencies:4",
+          "arn:aws:lambda:ap-northeast-2:443370694043:layer:stock-crawler-dev-crawling-dependencies:1"
+        ]
       },
       "DependsOn": [
         "StockInfoCrawlerLogGroup"
@@ -214,7 +217,7 @@
       "Properties": {
         "Code": {
           "S3Bucket": "fiflowbucket",
-          "S3Key": "serverless/stock-crawler/dev/1754476010162-2025-08-06T10:26:50.162Z/stock-crawler.zip"
+          "S3Key": "serverless/stock-crawler/dev/1754915571655-2025-08-11T12:32:51.655Z/getRealtimePrice.zip"
         },
         "Handler": "get_realtime_price.main",
         "Runtime": "python3.9",
@@ -234,50 +237,53 @@
             "IamRoleLambdaExecution",
             "Arn"
           ]
-        }
+        },
+        "Layers": [
+          "arn:aws:lambda:ap-northeast-2:443370694043:layer:stock-crawler-dev-common-dependencies:4"
+        ]
       },
       "DependsOn": [
         "GetRealtimePriceLogGroup"
       ]
     },
-    "MainCrawlerLambdaVersionk8PUdoHGMaU0spL7vyjZJhteaAMxRalHi9hd1HSTc": {
+    "MainCrawlerLambdaVersion618UDBP6LeRsmXXE26WI6wDrOY0pexSDrS5I0VmpCdE": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "MainCrawlerLambdaFunction"
         },
-        "CodeSha256": "BVN7WIcZOBQsk1q9bJbwjt86aCBlLO1jGJUSwPkPVVo="
+        "CodeSha256": "e3okT3bybfVsj+Y+bSSFEBvy5hwPLiaozX+M3VMLgpg="
       }
     },
-    "IndexCrawlerLambdaVersionCzVHwaUY91o4zL3EHanFViQwAXQ2udu517Kl1eaK9aA": {
+    "IndexCrawlerLambdaVersionsczX0VJZLeVOPL20ekZNxLKNw0hd3g5TbXKQ2h9Q0": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "IndexCrawlerLambdaFunction"
         },
-        "CodeSha256": "BVN7WIcZOBQsk1q9bJbwjt86aCBlLO1jGJUSwPkPVVo="
+        "CodeSha256": "e3okT3bybfVsj+Y+bSSFEBvy5hwPLiaozX+M3VMLgpg="
       }
     },
-    "StockInfoCrawlerLambdaVersionVcchosXiC0bp367gGKbnQyTOfoMY3mazDvKcgQWpl4": {
+    "StockInfoCrawlerLambdaVersionOcjfqeyWm17GFBfwuKV2Aw0hR92iPJs83NuJ6YOSgU": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "StockInfoCrawlerLambdaFunction"
         },
-        "CodeSha256": "BVN7WIcZOBQsk1q9bJbwjt86aCBlLO1jGJUSwPkPVVo="
+        "CodeSha256": "e3okT3bybfVsj+Y+bSSFEBvy5hwPLiaozX+M3VMLgpg="
       }
     },
-    "GetRealtimePriceLambdaVersionVKj359qO2YlqwkH8vSBv6xjW1mODPZnpVAWnqZW2p8": {
+    "GetRealtimePriceLambdaVersion26crHlupoxIKkKe1omk160ajz93BHeAES1xVv3ro8s4": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "GetRealtimePriceLambdaFunction"
         },
-        "CodeSha256": "BVN7WIcZOBQsk1q9bJbwjt86aCBlLO1jGJUSwPkPVVo="
+        "CodeSha256": "e3okT3bybfVsj+Y+bSSFEBvy5hwPLiaozX+M3VMLgpg="
       }
     },
     "ApiGatewayRestApi": {
@@ -292,6 +298,21 @@
         "Policy": ""
       }
     },
+    "ApiGatewayResourceTriggerDashindexDashcrawl": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Fn::GetAtt": [
+            "ApiGatewayRestApi",
+            "RootResourceId"
+          ]
+        },
+        "PathPart": "trigger-index-crawl",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
     "ApiGatewayResourceRealtimeDashprice": {
       "Type": "AWS::ApiGateway::Resource",
       "Properties": {
@@ -302,6 +323,51 @@
           ]
         },
         "PathPart": "realtime-price",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayMethodTriggerDashindexDashcrawlOptions": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "AuthorizationType": "NONE",
+        "HttpMethod": "OPTIONS",
+        "MethodResponses": [
+          {
+            "StatusCode": "200",
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Methods": true
+            },
+            "ResponseModels": {}
+          }
+        ],
+        "RequestParameters": {},
+        "Integration": {
+          "Type": "MOCK",
+          "RequestTemplates": {
+            "application/json": "{statusCode:200}"
+          },
+          "ContentHandling": "CONVERT_TO_TEXT",
+          "IntegrationResponses": [
+            {
+              "StatusCode": "200",
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,POST'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              }
+            }
+          ]
+        },
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceTriggerDashindexDashcrawl"
+        },
         "RestApiId": {
           "Ref": "ApiGatewayRestApi"
         }
@@ -352,6 +418,52 @@
         }
       }
     },
+    "ApiGatewayMethodTriggerDashindexDashcrawlPost": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "POST",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceTriggerDashindexDashcrawl"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "IndexCrawlerLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "IndexCrawlerLambdaPermissionApiGateway"
+      ]
+    },
     "ApiGatewayMethodRealtimeDashpriceGet": {
       "Type": "AWS::ApiGateway::Method",
       "Properties": {
@@ -398,7 +510,7 @@
         "GetRealtimePriceLambdaPermissionApiGateway"
       ]
     },
-    "ApiGatewayDeployment1754476004974": {
+    "ApiGatewayDeployment1754915563076": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
@@ -407,9 +519,48 @@
         "StageName": "dev"
       },
       "DependsOn": [
+        "ApiGatewayMethodTriggerDashindexDashcrawlOptions",
         "ApiGatewayMethodRealtimeDashpriceOptions",
+        "ApiGatewayMethodTriggerDashindexDashcrawlPost",
         "ApiGatewayMethodRealtimeDashpriceGet"
       ]
+    },
+    "IndexCrawlerLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "IndexCrawlerLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
     },
     "GetRealtimePriceLambdaPermissionApiGateway": {
       "Type": "AWS::Lambda::Permission",
@@ -459,7 +610,7 @@
     "MainCrawlerLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "MainCrawlerLambdaVersionk8PUdoHGMaU0spL7vyjZJhteaAMxRalHi9hd1HSTc"
+        "Ref": "MainCrawlerLambdaVersion618UDBP6LeRsmXXE26WI6wDrOY0pexSDrS5I0VmpCdE"
       },
       "Export": {
         "Name": "sls-stock-crawler-dev-MainCrawlerLambdaFunctionQualifiedArn"
@@ -468,7 +619,7 @@
     "IndexCrawlerLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "IndexCrawlerLambdaVersionCzVHwaUY91o4zL3EHanFViQwAXQ2udu517Kl1eaK9aA"
+        "Ref": "IndexCrawlerLambdaVersionsczX0VJZLeVOPL20ekZNxLKNw0hd3g5TbXKQ2h9Q0"
       },
       "Export": {
         "Name": "sls-stock-crawler-dev-IndexCrawlerLambdaFunctionQualifiedArn"
@@ -477,7 +628,7 @@
     "StockInfoCrawlerLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "StockInfoCrawlerLambdaVersionVcchosXiC0bp367gGKbnQyTOfoMY3mazDvKcgQWpl4"
+        "Ref": "StockInfoCrawlerLambdaVersionOcjfqeyWm17GFBfwuKV2Aw0hR92iPJs83NuJ6YOSgU"
       },
       "Export": {
         "Name": "sls-stock-crawler-dev-StockInfoCrawlerLambdaFunctionQualifiedArn"
@@ -486,7 +637,7 @@
     "GetRealtimePriceLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "GetRealtimePriceLambdaVersionVKj359qO2YlqwkH8vSBv6xjW1mODPZnpVAWnqZW2p8"
+        "Ref": "GetRealtimePriceLambdaVersion26crHlupoxIKkKe1omk160ajz93BHeAES1xVv3ro8s4"
       },
       "Export": {
         "Name": "sls-stock-crawler-dev-GetRealtimePriceLambdaFunctionQualifiedArn"
