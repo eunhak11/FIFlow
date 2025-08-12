@@ -16,7 +16,8 @@
           "KAKAO_CLIENT_ID": "a261f0e0564225d203c0a80ee62edffd",
           "KAKAO_CLIENT_SECRET": "<REDACTED>",
           "KAKAO_REDIRECT_URI": "https://bwq4lo8ac5.execute-api.ap-northeast-2.amazonaws.com/dev/auth/kakao/callback",
-          "CORS_ORIGIN": "*"
+          "CORS_ORIGIN": "*",
+          "CRAWLER_API_BASE_URL": "https://jxi5400bak.execute-api.ap-northeast-2.amazonaws.com/dev"
         },
         "iam": {
           "role": {
@@ -252,7 +253,7 @@
                   "S3Bucket": {
                     "Ref": "ServerlessDeploymentBucket"
                   },
-                  "S3Key": "serverless/api-server/dev/1754918317273-2025-08-11T13:18:37.273Z/app.zip"
+                  "S3Key": "serverless/api-server/dev/1754995679309-2025-08-12T10:47:59.309Z/app.zip"
                 },
                 "Handler": "app.handler",
                 "Runtime": "nodejs20.x",
@@ -266,7 +267,8 @@
                     "KAKAO_CLIENT_ID": "a261f0e0564225d203c0a80ee62edffd",
                     "KAKAO_CLIENT_SECRET": "<REDACTED>",
                     "KAKAO_REDIRECT_URI": "https://bwq4lo8ac5.execute-api.ap-northeast-2.amazonaws.com/dev/auth/kakao/callback",
-                    "CORS_ORIGIN": "*"
+                    "CORS_ORIGIN": "*",
+                    "CRAWLER_API_BASE_URL": "https://jxi5400bak.execute-api.ap-northeast-2.amazonaws.com/dev"
                   }
                 },
                 "Role": {
@@ -280,14 +282,14 @@
                 "AppLogGroup"
               ]
             },
-            "AppLambdaVersionZ8m33tinyEa41CM4sEVz3JpCtLCpK1Z0mxefUm6otY": {
+            "AppLambdaVersionn5bkTDA6jAItrIIMSkVkk9TsaQeP3fSB82ffaUP7zo": {
               "Type": "AWS::Lambda::Version",
               "DeletionPolicy": "Retain",
               "Properties": {
                 "FunctionName": {
                   "Ref": "AppLambdaFunction"
                 },
-                "CodeSha256": "9p/Rb5649l1KgaYWlojQ6q3AnIJrxLEWx0t69l1HCVk="
+                "CodeSha256": "fKd0jc4k6wOS44E7KYwJFxyzGC7T4Yr2VcbqJBGvgBA="
               }
             },
             "HttpApi": {
@@ -398,7 +400,7 @@
             "AppLambdaFunctionQualifiedArn": {
               "Description": "Current Lambda function version",
               "Value": {
-                "Ref": "AppLambdaVersionZ8m33tinyEa41CM4sEVz3JpCtLCpK1Z0mxefUm6otY"
+                "Ref": "AppLambdaVersionn5bkTDA6jAItrIIMSkVkk9TsaQeP3fSB82ffaUP7zo"
               },
               "Export": {
                 "Name": "sls-api-server-dev-AppLambdaFunctionQualifiedArn"
@@ -531,7 +533,7 @@
           "node_modules/**"
         ],
         "artifactsS3KeyDirname": "serverless/api-server/dev/code-artifacts",
-        "artifactDirectoryName": "serverless/api-server/dev/1754918317273-2025-08-11T13:18:37.273Z"
+        "artifactDirectoryName": "serverless/api-server/dev/1754995679309-2025-08-12T10:47:59.309Z"
       },
       "functions": {
         "app": {
@@ -554,10 +556,9 @@
           "timeout": 6,
           "runtime": "nodejs20.x",
           "vpc": {},
-          "versionLogicalId": "AppLambdaVersionZ8m33tinyEa41CM4sEVz3JpCtLCpK1Z0mxefUm6otY"
+          "versionLogicalId": "AppLambdaVersionn5bkTDA6jAItrIIMSkVkk9TsaQeP3fSB82ffaUP7zo"
         }
-      },
-      "plugins": null
+      }
     },
     "provider": {
       "name": "aws",
@@ -570,7 +571,8 @@
         "KAKAO_CLIENT_ID": "a261f0e0564225d203c0a80ee62edffd",
         "KAKAO_CLIENT_SECRET": "<REDACTED>",
         "KAKAO_REDIRECT_URI": "https://bwq4lo8ac5.execute-api.ap-northeast-2.amazonaws.com/dev/auth/kakao/callback",
-        "CORS_ORIGIN": "*"
+        "CORS_ORIGIN": "*",
+        "CRAWLER_API_BASE_URL": "https://jxi5400bak.execute-api.ap-northeast-2.amazonaws.com/dev"
       },
       "iam": {
         "role": {
@@ -806,7 +808,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/api-server/dev/1754918317273-2025-08-11T13:18:37.273Z/app.zip"
+                "S3Key": "serverless/api-server/dev/1754995679309-2025-08-12T10:47:59.309Z/app.zip"
               },
               "Handler": "app.handler",
               "Runtime": "nodejs20.x",
@@ -820,7 +822,8 @@
                   "KAKAO_CLIENT_ID": "a261f0e0564225d203c0a80ee62edffd",
                   "KAKAO_CLIENT_SECRET": "<REDACTED>",
                   "KAKAO_REDIRECT_URI": "https://bwq4lo8ac5.execute-api.ap-northeast-2.amazonaws.com/dev/auth/kakao/callback",
-                  "CORS_ORIGIN": "*"
+                  "CORS_ORIGIN": "*",
+                  "CRAWLER_API_BASE_URL": "https://jxi5400bak.execute-api.ap-northeast-2.amazonaws.com/dev"
                 }
               },
               "Role": {
@@ -834,14 +837,14 @@
               "AppLogGroup"
             ]
           },
-          "AppLambdaVersionZ8m33tinyEa41CM4sEVz3JpCtLCpK1Z0mxefUm6otY": {
+          "AppLambdaVersionn5bkTDA6jAItrIIMSkVkk9TsaQeP3fSB82ffaUP7zo": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "AppLambdaFunction"
               },
-              "CodeSha256": "9p/Rb5649l1KgaYWlojQ6q3AnIJrxLEWx0t69l1HCVk="
+              "CodeSha256": "fKd0jc4k6wOS44E7KYwJFxyzGC7T4Yr2VcbqJBGvgBA="
             }
           },
           "HttpApi": {
@@ -952,7 +955,7 @@
           "AppLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "AppLambdaVersionZ8m33tinyEa41CM4sEVz3JpCtLCpK1Z0mxefUm6otY"
+              "Ref": "AppLambdaVersionn5bkTDA6jAItrIIMSkVkk9TsaQeP3fSB82ffaUP7zo"
             },
             "Export": {
               "Name": "sls-api-server-dev-AppLambdaFunctionQualifiedArn"
@@ -1087,7 +1090,7 @@
       "serviceProvider": null,
       "instanceParameters": null
     },
-    "serviceRawFile": "# api-server/serverless.yml\nservice: api-server\nprovider:\n  name: aws\n  runtime: nodejs20.x\n  region: ap-northeast-2\n  memorySize: 256\n  environment:\n    DYNAMODB_TABLE: fiflow-users\n    JWT_SECRET: ${env:JWT_SECRET}\n    KAKAO_CLIENT_ID: ${env:KAKAO_CLIENT_ID}\n    KAKAO_CLIENT_SECRET: ${env:KAKAO_CLIENT_SECRET}\n    KAKAO_REDIRECT_URI: ${env:KAKAO_REDIRECT_URI}\n    CORS_ORIGIN: ${env:CORS_ORIGIN}\n  iam:\n    role:\n      statements:\n        - Effect: Allow\n          Action:\n            - logs:CreateLogGroup\n            - logs:CreateLogStream\n            - logs:PutLogEvents\n            - logs:TagResource\n          Resource: arn:aws:logs:ap-northeast-2:443370694043:log-group:/aws/lambda/api-server-dev*:*\n        - Effect: Allow\n          Action:\n            - dynamodb:PutItem\n            - dynamodb:Query\n            - dynamodb:Scan\n            - dynamodb:UpdateItem\n            - dynamodb:DeleteItem\n          Resource:\n            - arn:aws:dynamodb:ap-northeast-2:443370694043:table/fiflow-users\n            - arn:aws:dynamodb:ap-northeast-2:443370694043:table/fiflow-users/index/*\n        - Effect: Allow\n          Action: lambda:InvokeFunction\n          Resource:\n            - arn:aws:lambda:ap-northeast-2:443370694043:function:stock-crawler-dev-mainCrawler\n\npackage:\n  individually: true\n  patterns:\n    - '!node_modules/**'\n    - 'node_modules/**'\n\nplugins:\n\nfunctions:\n  app:\n    handler: app.handler\n    events:\n      - httpApi:\n          path: '/{proxy+}'\n          method: ANY",
+    "serviceRawFile": "# api-server/serverless.yml\nservice: api-server\nprovider:\n  name: aws\n  runtime: nodejs20.x\n  region: ap-northeast-2\n  memorySize: 256\n  environment:\n    DYNAMODB_TABLE: fiflow-users\n    JWT_SECRET: ${env:JWT_SECRET}\n    KAKAO_CLIENT_ID: ${env:KAKAO_CLIENT_ID}\n    KAKAO_CLIENT_SECRET: ${env:KAKAO_CLIENT_SECRET}\n    KAKAO_REDIRECT_URI: ${env:KAKAO_REDIRECT_URI}\n    CORS_ORIGIN: ${env:CORS_ORIGIN}\n    CRAWLER_API_BASE_URL: https://jxi5400bak.execute-api.ap-northeast-2.amazonaws.com/dev\n  iam:\n    role:\n      statements:\n        - Effect: Allow\n          Action:\n            - logs:CreateLogGroup\n            - logs:CreateLogStream\n            - logs:PutLogEvents\n            - logs:TagResource\n          Resource: arn:aws:logs:ap-northeast-2:443370694043:log-group:/aws/lambda/api-server-dev*:*\n        - Effect: Allow\n          Action:\n            - dynamodb:PutItem\n            - dynamodb:Query\n            - dynamodb:Scan\n            - dynamodb:UpdateItem\n            - dynamodb:DeleteItem\n          Resource:\n            - arn:aws:dynamodb:ap-northeast-2:443370694043:table/fiflow-users\n            - arn:aws:dynamodb:ap-northeast-2:443370694043:table/fiflow-users/index/*\n        - Effect: Allow\n          Action: lambda:InvokeFunction\n          Resource:\n            - arn:aws:lambda:ap-northeast-2:443370694043:function:stock-crawler-dev-mainCrawler\n\npackage:\n  individually: true\n  patterns:\n    - '!node_modules/**'\n    - 'node_modules/**'\n\nfunctions:\n  app:\n    handler: app.handler\n    events:\n      - httpApi:\n          path: '/{proxy+}'\n          method: ANY",
     "command": [
       "deploy"
     ],
@@ -1100,12 +1103,12 @@
     "serviceProviderAwsCfStackName": "api-server-dev",
     "serviceProviderAwsCfStackId": "arn:aws:cloudformation:ap-northeast-2:443370694043:stack/api-server-dev/72847ab0-74db-11f0-b3a4-02560fbbeadf",
     "serviceProviderAwsCfStackCreated": "2025-08-09T04:43:51.714Z",
-    "serviceProviderAwsCfStackUpdated": "2025-08-11T09:42:46.197Z",
+    "serviceProviderAwsCfStackUpdated": "2025-08-12T09:45:29.099Z",
     "serviceProviderAwsCfStackStatus": "UPDATE_COMPLETE",
     "serviceProviderAwsCfStackOutputs": [
       {
         "OutputKey": "AppLambdaFunctionQualifiedArn",
-        "OutputValue": "arn:aws:lambda:ap-northeast-2:443370694043:function:api-server-dev-app:17",
+        "OutputValue": "arn:aws:lambda:ap-northeast-2:443370694043:function:api-server-dev-app:31",
         "Description": "Current Lambda function version",
         "ExportName": "sls-api-server-dev-AppLambdaFunctionQualifiedArn"
       },
@@ -1322,7 +1325,7 @@
               "S3Bucket": {
                 "Ref": "ServerlessDeploymentBucket"
               },
-              "S3Key": "serverless/api-server/dev/1754918317273-2025-08-11T13:18:37.273Z/app.zip"
+              "S3Key": "serverless/api-server/dev/1754995679309-2025-08-12T10:47:59.309Z/app.zip"
             },
             "Handler": "app.handler",
             "Runtime": "nodejs20.x",
@@ -1336,7 +1339,8 @@
                 "KAKAO_CLIENT_ID": "a261f0e0564225d203c0a80ee62edffd",
                 "KAKAO_CLIENT_SECRET": "<REDACTED>",
                 "KAKAO_REDIRECT_URI": "https://bwq4lo8ac5.execute-api.ap-northeast-2.amazonaws.com/dev/auth/kakao/callback",
-                "CORS_ORIGIN": "*"
+                "CORS_ORIGIN": "*",
+                "CRAWLER_API_BASE_URL": "https://jxi5400bak.execute-api.ap-northeast-2.amazonaws.com/dev"
               }
             },
             "Role": {
@@ -1350,14 +1354,14 @@
             "AppLogGroup"
           ]
         },
-        "AppLambdaVersionZ8m33tinyEa41CM4sEVz3JpCtLCpK1Z0mxefUm6otY": {
+        "AppLambdaVersionn5bkTDA6jAItrIIMSkVkk9TsaQeP3fSB82ffaUP7zo": {
           "Type": "AWS::Lambda::Version",
           "DeletionPolicy": "Retain",
           "Properties": {
             "FunctionName": {
               "Ref": "AppLambdaFunction"
             },
-            "CodeSha256": "9p/Rb5649l1KgaYWlojQ6q3AnIJrxLEWx0t69l1HCVk="
+            "CodeSha256": "fKd0jc4k6wOS44E7KYwJFxyzGC7T4Yr2VcbqJBGvgBA="
           }
         },
         "HttpApi": {
@@ -1468,7 +1472,7 @@
         "AppLambdaFunctionQualifiedArn": {
           "Description": "Current Lambda function version",
           "Value": {
-            "Ref": "AppLambdaVersionZ8m33tinyEa41CM4sEVz3JpCtLCpK1Z0mxefUm6otY"
+            "Ref": "AppLambdaVersionn5bkTDA6jAItrIIMSkVkk9TsaQeP3fSB82ffaUP7zo"
           },
           "Export": {
             "Name": "sls-api-server-dev-AppLambdaFunctionQualifiedArn"

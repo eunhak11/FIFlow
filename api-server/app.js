@@ -5,8 +5,9 @@ const https = require('https');
 const jwt = require('jsonwebtoken');
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 const { DynamoDBDocumentClient, UpdateCommand, DeleteCommand, QueryCommand } = require('@aws-sdk/lib-dynamodb');
-const { LambdaClient, InvokeCommand } = require('@aws-sdk/client-lambda'); // 추가
+const { LambdaClient, InvokeCommand } = require('@aws-sdk/client-lambda'); 
 const cheerio = require('cheerio');
+const fs = require('fs');
 const dynamoDb = DynamoDBDocumentClient.from(new DynamoDBClient({ region: 'ap-northeast-2' }));
 const {
   createUser,
@@ -80,24 +81,6 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-// 시장 시간 체크 (평일 09:00~16:00 KST)
-const isMarketOpen = () => {
-  const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
-  const day = now.getDay();
-  const hour = now.getHours();
-  const minute = now.getMinutes();
-  const currentTime = hour * 100 + minute;
-  if (day === 0 || day === 6) {
-    console.log('주말입니다. 크롤러 실행 불가.');
-    return false;
-  }
-  if (currentTime < 900 || currentTime > 1600) {
-    console.log('시장 시간 외입니다 (09:00~16:00 KST). 크롤러 실행 불가.');
-    return false;
-  }
-  return true;
-};
-
 // 헬스체크
 app.get('/dev/', (req, res) => {
   console.log('Health check requested');
@@ -124,6 +107,114 @@ app.get('/dev/stocks', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Error fetching stocks:', error.message, error.stack);
     res.status(500).json({ message: '주식 정보를 가져오는 데 실패했습니다.', error: error.message });
+  }
+});
+
+// New endpoint: /dev/stocks/marketdata
+app.get('/dev/stocks/marketdata', authenticateToken, async (req, res) => {
+  try {
+    console.log('사용자 주식 및 시장 데이터 조회 요청:', req.user.kakaoId);
+
+    // 1. 사용자 주식 목록 가져오기
+    const userStocks = await getUserWithStocks(req.user.kakaoId).catch((err) => {
+      console.error('getUserWithStocks error:', err.message, err.stack);
+      throw new Error('사용자 주식 목록 조회 실패');
+    });
+
+    const stocksWithMarketData = [];
+
+    for (const stock of userStocks.filter((item) => item.SK.startsWith('STOCK#'))) {
+      const symbol = stock.symbol;
+      const stockName = stock.name;
+
+      // 2. 실시간 주가 정보 가져오기 (Naver Finance 직접 크롤링)
+      let realtimePriceData = null;
+      try {
+        const html = await fetchNaverFinance(symbol); // Reusing existing function for HTML fetch
+        const $ = cheerio.load(html);
+        // 전체 페이지 텍스트에서 가격 정보 추출
+        const pageText = $('body').text().replace(/\s+/g, ' ').trim();
+
+        // 정규 표현식으로 가격 정보 매칭
+        const priceInfoMatch = pageText.match(/현재가\s*(\d{1,3}(?:,\d{3})*)\s*전일대비\s*(상승|하락)?\s*(\d{1,3}(?:,\d{3})*)\s*(플러스|마이너스)?\s*(\d+\.\d+)\s*퍼센트/);
+
+        let priceText = '';
+        let changeText = '';
+        let changeRateText = '';
+        let changeSign = 1; // 1 for 상승, -1 for 하락
+
+        if (priceInfoMatch) {
+          priceText = priceInfoMatch[1].replace(/,/g, '');
+          const changeDirection = priceInfoMatch[2] || ''; // 상승/하락, 없을 경우 빈 문자열
+          changeText = priceInfoMatch[3].replace(/,/g, '');
+          const signWord = priceInfoMatch[4]; // 플러스 or 마이너스
+          changeRateText = priceInfoMatch[5];
+
+          if (changeDirection === '하락' || signWord === '마이너스') {
+            changeSign = -1;
+          }
+        } else {
+          console.log(`[${symbol}] 가격 정보 매칭 실패:`, pageText.substring(0, 200)); // 디버깅용
+        }
+
+        // 추출된 텍스트를 기반으로 변동 부호 결정
+        let stockChange = parseFloat(changeText) * changeSign;
+        let changeRate = parseFloat(changeRateText) * changeSign; // changeRate에도 changeSign 적용
+
+        console.log(`[${symbol}] Raw priceText: '${priceText}'`);
+        console.log(`[${symbol}] Raw changeText (절대값): '${changeText}'`);
+        console.log(`[${symbol}] Raw changeRateText (절대값): '${changeRateText}'`);
+
+        realtimePriceData = {
+          price: parseFloat(priceText) || 0,
+          change: stockChange || 0,
+          changeRate: changeRate || 0, // 수정된 changeRate 사용
+        };
+        console.log(`[${symbol}] 실시간 주가 데이터:`, realtimePriceData);
+      } catch (e) {
+        console.error(`[${symbol}] 실시간 주가 크롤링 오류:`, e.message);
+        // Continue even if real-time data fails
+      }
+
+      // 3. 외국인 순매매 데이터 가져오기 (DynamoDB에서)
+      let foreignerNetBuyData = null;
+      try {
+        const today = new Date().toISOString().split('T')[0];
+        const marketDataFromDb = await getMarketData(symbol, today).catch((err) => {
+          console.error('getMarketData error:', err.message, err.stack);
+          throw new Error('DynamoDB 시장 데이터 조회 실패');
+        });
+
+        if (marketDataFromDb && marketDataFromDb[0]) {
+          foreignerNetBuyData = {
+            foreignerNetBuy: marketDataFromDb[0].foreignerNetBuy,
+            foreignerNetBuyDate: marketDataFromDb[0].foreignerNetBuyDate,
+          };
+          console.log(`[${symbol}] 외국인 순매매 데이터 (DB):`, foreignerNetBuyData);
+        }
+      } catch (e) {
+        console.error(`[${symbol}] 외국인 순매매 데이터 조회 오류 (DB):`, e.message);
+        // Continue even if DB data fails
+      }
+
+      // 4. 데이터 결합
+      stocksWithMarketData.push({
+        symbol: symbol,
+        name: stockName,
+        marketData: {
+          price: realtimePriceData ? realtimePriceData.price : null,
+          change: realtimePriceData ? realtimePriceData.change : null,
+          changeRate: realtimePriceData ? realtimePriceData.changeRate : null,
+          foreignerNetBuy: foreignerNetBuyData ? foreignerNetBuyData.foreignerNetBuy : [],
+          foreignerNetBuyDate: foreignerNetBuyData ? foreignerNetBuyData.foreignerNetBuyDate : [],
+        },
+      });
+    }
+
+    res.status(200).json(stocksWithMarketData);
+  } catch (error) {
+    console.error('주식 및 시장 데이터 조회 오류:', error.message, error.stack);
+    res.status(500).json({ message: '주식 및 시장 데이터를 가져오는 데 실패했습니다.', error: error.message });
   }
 });
 
@@ -534,9 +625,7 @@ app.get('/dev/auth/me', authenticateToken, async (req, res) => {
 app.post('/dev/crawler/trigger', authenticateToken, async (req, res) => {
   try {
     console.log('Crawler trigger requested:', req.body);
-    if (!isMarketOpen()) {
-      return res.status(400).json({ message: '주식 시장 시간(평일 09:00~16:00 KST) 외에는 크롤러를 실행할 수 없습니다.' });
-    }
+    
     const lambda = new LambdaClient({
       region: 'ap-northeast-2',
       httpOptions: {

@@ -1,10 +1,9 @@
-# crawler/index_crawler.py
+# /crawler/index_crawler.py
 import requests
-import datetime
 import json
 import logging
 from botocore.exceptions import ClientError
-from db import create_index_data
+from db import update_index_data  # create_index_data 대신 update_index_data
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)
@@ -27,7 +26,7 @@ def get_index_data(name):
                                 'name': item['cd'],
                                 'value': float(item['nv'] / 100.0),
                                 'change': float(item['cv'] / 100.0),
-                                'changeRate': float(item['cr'])  # Number
+                                'changeRate': float(item['cr'])
                             }
             logger.warning(f"[{name}] 지수 데이터 없음")
             return None
@@ -38,18 +37,16 @@ def get_index_data(name):
     return None
 
 def main(event=None, context=None):
-    """Lambda 핸들러: 지수 데이터 크롤링 및 저장"""
+    """Lambda 핸들러: 지수 데이터 크롤링 및 업데이트"""
     try:
         indices = event.get('indices', ['KOSPI', 'KOSDAQ', 'KPI200']) if event else ['KOSPI', 'KOSDAQ', 'KPI200']
-        date = datetime.date.today().isoformat()
         results = []
         for name in indices:
             logger.info(f"[{name}] 지수 크롤링 시작...")
             index_data = get_index_data(name)
             if index_data:
-                index_data['date'] = date
                 logger.info(f"크롤링 데이터: {index_data}")
-                create_index_data(index_data)
+                update_index_data(index_data)  # update_index_data 호출
                 results.append({"name": name, "status": "success"})
             else:
                 logger.error(f"[{name}] 크롤링 실패")
@@ -58,6 +55,3 @@ def main(event=None, context=None):
     except Exception as e:
         logger.error(f"오류 발생: {e}")
         return {"statusCode": 500, "body": json.dumps({"error": str(e)})}
-
-if __name__ == "__main__":
-    main()

@@ -12,6 +12,7 @@ provider:
     KAKAO_CLIENT_SECRET: ${env:KAKAO_CLIENT_SECRET}
     KAKAO_REDIRECT_URI: ${env:KAKAO_REDIRECT_URI}
     CORS_ORIGIN: ${env:CORS_ORIGIN}
+    CRAWLER_API_BASE_URL: https://jxi5400bak.execute-api.ap-northeast-2.amazonaws.com/dev
   iam:
     role:
       statements:
@@ -42,8 +43,6 @@ package:
   patterns:
     - '!node_modules/**'
     - 'node_modules/**'
-
-plugins:
 
 functions:
   app:

@@ -1,6 +1,5 @@
-// api-server/dynamo/db.js
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
-const { DynamoDBDocumentClient, PutCommand, QueryCommand, DeleteCommand, UpdateCommand } = require('@aws-sdk/lib-dynamodb');
+const { DynamoDBDocumentClient, PutCommand, QueryCommand, DeleteCommand, UpdateCommand, ScanCommand } = require('@aws-sdk/lib-dynamodb');
 
 // DynamoDB 클라이언트 초기화 (서울 리전: ap-northeast-2)
 const client = new DynamoDBClient({ region: 'ap-northeast-2' });
@@ -25,7 +24,7 @@ async function createUser(data) {
   };
   try {
     await dynamoDb.send(new PutCommand(params));
-    console.log(`User 저장 성공: ${data.kakaoId || data.email}`);
+    console.info(`User 저장 성공: ${data.kakaoId || data.email}`);
     return { status: 'success', kakaoId: data.kakaoId, email: data.email };
   } catch (error) {
     console.error('User 저장 오류:', error);
@@ -47,7 +46,7 @@ async function createStock(userId, symbol, name) {
   };
   try {
     await dynamoDb.send(new PutCommand(params));
-    console.log(`Stock 저장 성공: ${symbol}`);
+    console.info(`Stock 저장 성공: ${symbol}`);
     return { status: 'success', symbol };
   } catch (error) {
     console.error('Stock 저장 오류:', error);
@@ -76,7 +75,7 @@ async function createMarketData(data) {
   };
   try {
     await dynamoDb.send(new PutCommand(params));
-    console.log(`MarketData 저장 성공: ${data.symbol}_${data.date}`);
+    console.info(`MarketData 저장 성공: ${data.symbol}_${data.date}`);
     return { status: 'success', symbol: data.symbol, date: data.date };
   } catch (error) {
     console.error('MarketData 저장 오류:', error);
@@ -84,28 +83,38 @@ async function createMarketData(data) {
   }
 }
 
-async function createIndexData(data) {
+async function updateIndexData(data) {
   const params = {
     TableName: process.env.DYNAMODB_TABLE || 'fiflow-users',
-    Item: {
+    Key: {
       PK: `INDEX#${data.name}`,
-      SK: `DATA#${data.date}`,
-      index_name_date: `${data.name}_${data.date}`,
-      name: data.name,
-      value: parseFloat(data.value),
-      change: parseFloat(data.change),
-      changeRate: parseFloat(data.changeRate),
-      date: data.date,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      SK: 'LATEST_DATA',
     },
+    UpdateExpression: 'SET #n = :n, #v = :v, #chg = :chg, #chgRate = :chgRate, #updatedAt = :updatedAt, #createdAt = if_not_exists(#createdAt, :createdAt)',
+    ExpressionAttributeNames: {
+      '#n': 'name',
+      '#v': 'value',
+      '#chg': 'change',
+      '#chgRate': 'changeRate',
+      '#createdAt': 'createdAt',
+      '#updatedAt': 'updatedAt',
+    },
+    ExpressionAttributeValues: {
+      ':n': data.name,
+      ':v': parseFloat(data.value),
+      ':chg': parseFloat(data.change),
+      ':chgRate': parseFloat(data.changeRate),
+      ':createdAt': new Date().toISOString(),
+      ':updatedAt': new Date().toISOString(),
+    },
+    ReturnValues: 'UPDATED_NEW',
   };
   try {
-    await dynamoDb.send(new PutCommand(params));
-    console.log(`IndexData 저장 성공: ${data.name}_${data.date}`);
-    return { status: 'success', name: data.name, date: data.date };
+    const result = await dynamoDb.send(new UpdateCommand(params));
+    console.info(`IndexData 업데이트 성공: ${data.name}`);
+    return { status: 'success', name: data.name };
   } catch (error) {
-    console.error('IndexData 저장 오류:', error);
+    console.error(`IndexData 업데이트 오류: ${data.name}`, error);
     throw error;
   }
 }
@@ -120,8 +129,7 @@ async function getUserWithStocks(userId) {
   };
   try {
     const result = await dynamoDb.send(new QueryCommand(params));
-    console.log(`User 조회 성공: ${userId}`);
-    console.log('getUserWithStocks query result:', result.Items);
+    console.info(`User 조회 성공: ${userId}`);
     return result.Items;
   } catch (error) {
     console.error('User 조회 오류:', error);
@@ -140,7 +148,7 @@ async function getMarketData(symbol, date) {
   };
   try {
     const result = await dynamoDb.send(new QueryCommand(params));
-    console.log(`MarketData 조회 성공: ${symbol}_${date}`);
+    console.info(`MarketData 조회 성공: ${symbol}_${date}`);
     return result.Items;
   } catch (error) {
     console.error('MarketData 조회 오류:', error);
@@ -148,18 +156,17 @@ async function getMarketData(symbol, date) {
   }
 }
 
-async function getIndexData(name, date) {
+async function getIndexData() {
   const params = {
     TableName: process.env.DYNAMODB_TABLE || 'fiflow-users',
-    KeyConditionExpression: 'PK = :pk AND SK = :sk',
+    FilterExpression: 'SK = :sk',
     ExpressionAttributeValues: {
-      ':pk': `INDEX#${name}`,
-      ':sk': `DATA#${date}`,
+      ':sk': 'DATA',
     },
   };
   try {
-    const result = await dynamoDb.send(new QueryCommand(params));
-    console.log(`IndexData 조회 성공: ${name}_${date}`);
+    const result = await dynamoDb.send(new ScanCommand(params));
+    console.info(`IndexData 조회 성공: ${result.Items.length} items, 데이터: ${JSON.stringify(result.Items)}`);
     return result.Items;
   } catch (error) {
     console.error('IndexData 조회 오류:', error);
@@ -178,7 +185,7 @@ async function getUserByEmail(email) {
   };
   try {
     const result = await dynamoDb.send(new QueryCommand(params));
-    console.log(`User 조회 성공 (email): ${email}`);
+    console.info(`User 조회 성공 (email): ${email}`);
     return result.Items;
   } catch (error) {
     console.error('User 조회 오류 (email):', error);
@@ -197,7 +204,7 @@ async function getUserByKakaoId(kakaoId) {
   };
   try {
     const result = await dynamoDb.send(new QueryCommand(params));
-    console.log(`User 조회 성공 (kakaoId): ${kakaoId}`);
+    console.info(`User 조회 성공 (kakaoId): ${kakaoId}`);
     return result.Items;
   } catch (error) {
     console.error('User 조회 오류 (kakaoId):', error);
@@ -210,7 +217,7 @@ module.exports = {
   createUser,
   createStock,
   createMarketData,
-  createIndexData,
+  updateIndexData,
   getUserWithStocks,
   getMarketData,
   getIndexData,
