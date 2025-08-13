@@ -32,25 +32,13 @@ functions:
   indexCrawler:
     handler: index_crawler.main
     timeout: 29
-    memorySize: 256
+    memorySize: 128
     events:
       - http:
           path: trigger-index-crawl
           method: post
           cors: true
-  stockInfoCrawler:
-    handler: get_stock_info.main
-    timeout: 29
-    memorySize: 256
-  getRealtimePrice:
-    handler: get_realtime_price.main
-    timeout: 28
-    memorySize: 128
-    events:
-      - http:
-          path: realtime-price
-          method: get
-          cors: true
+  
 custom:
   pythonRequirements:
     layer: true

@@ -6,20 +6,24 @@ const client = new DynamoDBClient({ region: 'ap-northeast-2' });
 const dynamoDb = DynamoDBDocumentClient.from(client);
 
 async function createUser(data) {
+  const item = {
+    PK: `USER#${data.kakaoId || data.email}`,
+    SK: 'PROFILE',
+    kakaoId: data.kakaoId || null,
+    nickname: data.nickname || '사용자',
+    loginType: data.loginType || 'kakao',
+    isActive: data.isActive !== undefined ? data.isActive : true,
+    lastLoginAt: data.lastLoginAt || null,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+
+  // email 값이 없으면 'temp@email.com'을 저장
+  item.email = data.email || 'temp@email.com';
+
   const params = {
     TableName: process.env.DYNAMODB_TABLE || 'fiflow-users',
-    Item: {
-      PK: `USER#${data.kakaoId || data.email}`,
-      SK: 'PROFILE',
-      kakaoId: data.kakaoId || null,
-      email: data.email || null,
-      nickname: data.nickname || '사용자',
-      loginType: data.loginType || 'kakao',
-      isActive: data.isActive !== undefined ? data.isActive : true,
-      lastLoginAt: data.lastLoginAt || null,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
+    Item: item,
     ConditionExpression: 'attribute_not_exists(PK)',
   };
   try {

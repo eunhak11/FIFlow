@@ -14,18 +14,6 @@
         "LogGroupName": "/aws/lambda/stock-crawler-dev-indexCrawler"
       }
     },
-    "StockInfoCrawlerLogGroup": {
-      "Type": "AWS::Logs::LogGroup",
-      "Properties": {
-        "LogGroupName": "/aws/lambda/stock-crawler-dev-stockInfoCrawler"
-      }
-    },
-    "GetRealtimePriceLogGroup": {
-      "Type": "AWS::Logs::LogGroup",
-      "Properties": {
-        "LogGroupName": "/aws/lambda/stock-crawler-dev-getRealtimePrice"
-      }
-    },
     "IamRoleLambdaExecution": {
       "Type": "AWS::IAM::Role",
       "Properties": {
@@ -127,7 +115,7 @@
       "Properties": {
         "Code": {
           "S3Bucket": "fiflowbucket",
-          "S3Key": "serverless/stock-crawler/dev/1754995097235-2025-08-12T10:38:17.235Z/mainCrawler.zip"
+          "S3Key": "serverless/stock-crawler/dev/1754999321051-2025-08-12T11:48:41.051Z/mainCrawler.zip"
         },
         "Handler": "lambda_main.main",
         "Runtime": "python3.9",
@@ -158,12 +146,12 @@
       "Properties": {
         "Code": {
           "S3Bucket": "fiflowbucket",
-          "S3Key": "serverless/stock-crawler/dev/1754995097235-2025-08-12T10:38:17.235Z/indexCrawler.zip"
+          "S3Key": "serverless/stock-crawler/dev/1754999321051-2025-08-12T11:48:41.051Z/indexCrawler.zip"
         },
         "Handler": "index_crawler.main",
         "Runtime": "python3.9",
         "FunctionName": "stock-crawler-dev-indexCrawler",
-        "MemorySize": 256,
+        "MemorySize": 128,
         "Timeout": 29,
         "Architectures": [
           "x86_64"
@@ -184,106 +172,24 @@
         "IndexCrawlerLogGroup"
       ]
     },
-    "StockInfoCrawlerLambdaFunction": {
-      "Type": "AWS::Lambda::Function",
-      "Properties": {
-        "Code": {
-          "S3Bucket": "fiflowbucket",
-          "S3Key": "serverless/stock-crawler/dev/1754995097235-2025-08-12T10:38:17.235Z/stockInfoCrawler.zip"
-        },
-        "Handler": "get_stock_info.main",
-        "Runtime": "python3.9",
-        "FunctionName": "stock-crawler-dev-stockInfoCrawler",
-        "MemorySize": 256,
-        "Timeout": 29,
-        "Architectures": [
-          "x86_64"
-        ],
-        "Environment": {
-          "Variables": {
-            "DYNAMODB_TABLE": "fiflow-users"
-          }
-        },
-        "Role": {
-          "Fn::GetAtt": [
-            "IamRoleLambdaExecution",
-            "Arn"
-          ]
-        }
-      },
-      "DependsOn": [
-        "StockInfoCrawlerLogGroup"
-      ]
-    },
-    "GetRealtimePriceLambdaFunction": {
-      "Type": "AWS::Lambda::Function",
-      "Properties": {
-        "Code": {
-          "S3Bucket": "fiflowbucket",
-          "S3Key": "serverless/stock-crawler/dev/1754995097235-2025-08-12T10:38:17.235Z/getRealtimePrice.zip"
-        },
-        "Handler": "get_realtime_price.main",
-        "Runtime": "python3.9",
-        "FunctionName": "stock-crawler-dev-getRealtimePrice",
-        "MemorySize": 128,
-        "Timeout": 28,
-        "Architectures": [
-          "x86_64"
-        ],
-        "Environment": {
-          "Variables": {
-            "DYNAMODB_TABLE": "fiflow-users"
-          }
-        },
-        "Role": {
-          "Fn::GetAtt": [
-            "IamRoleLambdaExecution",
-            "Arn"
-          ]
-        }
-      },
-      "DependsOn": [
-        "GetRealtimePriceLogGroup"
-      ]
-    },
-    "StockInfoCrawlerLambdaVersion8jXEFCZmJ9caaCwJaaAORgVvopmIj91ogB9t4XT4": {
-      "Type": "AWS::Lambda::Version",
-      "DeletionPolicy": "Retain",
-      "Properties": {
-        "FunctionName": {
-          "Ref": "StockInfoCrawlerLambdaFunction"
-        },
-        "CodeSha256": "cOxzNoJ7YXJ5NVALtqVyR1j81CH4pE0ED4nVO0tWoxc="
-      }
-    },
-    "MainCrawlerLambdaVersion9H8Q5215SUms49HPe8zqPNtOVsfU9D37wvFRDCWuQ8": {
-      "Type": "AWS::Lambda::Version",
-      "DeletionPolicy": "Retain",
-      "Properties": {
-        "FunctionName": {
-          "Ref": "MainCrawlerLambdaFunction"
-        },
-        "CodeSha256": "cOxzNoJ7YXJ5NVALtqVyR1j81CH4pE0ED4nVO0tWoxc="
-      }
-    },
-    "IndexCrawlerLambdaVersionNXjl99Tnf5cyjYaRgo1VY4Bg9DDTNio6WGfGXhSns": {
+    "IndexCrawlerLambdaVersionkvKgv1lKXoQMbxXvqF4TCHWixgb6fwl1TuevxjFI": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "IndexCrawlerLambdaFunction"
         },
-        "CodeSha256": "cOxzNoJ7YXJ5NVALtqVyR1j81CH4pE0ED4nVO0tWoxc="
+        "CodeSha256": "nwNhdtS1uBexefYFescZnV76k+wLrWDIUNC5DzqNG/U="
       }
     },
-    "GetRealtimePriceLambdaVersionOe37ql6qKIt3I0tMLr9dCrXNMvL1RzgokdcKngHbmk": {
+    "MainCrawlerLambdaVersionxU9KjjW4zvdknSnS5qP2hfhlMQFrsph1FlSR6JMs": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
-          "Ref": "GetRealtimePriceLambdaFunction"
+          "Ref": "MainCrawlerLambdaFunction"
         },
-        "CodeSha256": "cOxzNoJ7YXJ5NVALtqVyR1j81CH4pE0ED4nVO0tWoxc="
+        "CodeSha256": "nwNhdtS1uBexefYFescZnV76k+wLrWDIUNC5DzqNG/U="
       }
     },
     "ApiGatewayRestApi": {
@@ -308,21 +214,6 @@
           ]
         },
         "PathPart": "trigger-index-crawl",
-        "RestApiId": {
-          "Ref": "ApiGatewayRestApi"
-        }
-      }
-    },
-    "ApiGatewayResourceRealtimeDashprice": {
-      "Type": "AWS::ApiGateway::Resource",
-      "Properties": {
-        "ParentId": {
-          "Fn::GetAtt": [
-            "ApiGatewayRestApi",
-            "RootResourceId"
-          ]
-        },
-        "PathPart": "realtime-price",
         "RestApiId": {
           "Ref": "ApiGatewayRestApi"
         }
@@ -367,51 +258,6 @@
         },
         "ResourceId": {
           "Ref": "ApiGatewayResourceTriggerDashindexDashcrawl"
-        },
-        "RestApiId": {
-          "Ref": "ApiGatewayRestApi"
-        }
-      }
-    },
-    "ApiGatewayMethodRealtimeDashpriceOptions": {
-      "Type": "AWS::ApiGateway::Method",
-      "Properties": {
-        "AuthorizationType": "NONE",
-        "HttpMethod": "OPTIONS",
-        "MethodResponses": [
-          {
-            "StatusCode": "200",
-            "ResponseParameters": {
-              "method.response.header.Access-Control-Allow-Origin": true,
-              "method.response.header.Access-Control-Allow-Headers": true,
-              "method.response.header.Access-Control-Allow-Methods": true
-            },
-            "ResponseModels": {}
-          }
-        ],
-        "RequestParameters": {},
-        "Integration": {
-          "Type": "MOCK",
-          "RequestTemplates": {
-            "application/json": "{statusCode:200}"
-          },
-          "ContentHandling": "CONVERT_TO_TEXT",
-          "IntegrationResponses": [
-            {
-              "StatusCode": "200",
-              "ResponseParameters": {
-                "method.response.header.Access-Control-Allow-Origin": "'*'",
-                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
-                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET'"
-              },
-              "ResponseTemplates": {
-                "application/json": ""
-              }
-            }
-          ]
-        },
-        "ResourceId": {
-          "Ref": "ApiGatewayResourceRealtimeDashprice"
         },
         "RestApiId": {
           "Ref": "ApiGatewayRestApi"
@@ -464,53 +310,7 @@
         "IndexCrawlerLambdaPermissionApiGateway"
       ]
     },
-    "ApiGatewayMethodRealtimeDashpriceGet": {
-      "Type": "AWS::ApiGateway::Method",
-      "Properties": {
-        "HttpMethod": "GET",
-        "RequestParameters": {},
-        "ResourceId": {
-          "Ref": "ApiGatewayResourceRealtimeDashprice"
-        },
-        "RestApiId": {
-          "Ref": "ApiGatewayRestApi"
-        },
-        "ApiKeyRequired": false,
-        "AuthorizationType": "NONE",
-        "Integration": {
-          "IntegrationHttpMethod": "POST",
-          "Type": "AWS_PROXY",
-          "Uri": {
-            "Fn::Join": [
-              "",
-              [
-                "arn:",
-                {
-                  "Ref": "AWS::Partition"
-                },
-                ":apigateway:",
-                {
-                  "Ref": "AWS::Region"
-                },
-                ":lambda:path/2015-03-31/functions/",
-                {
-                  "Fn::GetAtt": [
-                    "GetRealtimePriceLambdaFunction",
-                    "Arn"
-                  ]
-                },
-                "/invocations"
-              ]
-            ]
-          }
-        },
-        "MethodResponses": []
-      },
-      "DependsOn": [
-        "GetRealtimePriceLambdaPermissionApiGateway"
-      ]
-    },
-    "ApiGatewayDeployment1754995093137": {
+    "ApiGatewayDeployment1754999317139": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
@@ -520,9 +320,7 @@
       },
       "DependsOn": [
         "ApiGatewayMethodTriggerDashindexDashcrawlOptions",
-        "ApiGatewayMethodRealtimeDashpriceOptions",
-        "ApiGatewayMethodTriggerDashindexDashcrawlPost",
-        "ApiGatewayMethodRealtimeDashpriceGet"
+        "ApiGatewayMethodTriggerDashindexDashcrawlPost"
       ]
     },
     "IndexCrawlerLambdaPermissionApiGateway": {
@@ -531,43 +329,6 @@
         "FunctionName": {
           "Fn::GetAtt": [
             "IndexCrawlerLambdaFunction",
-            "Arn"
-          ]
-        },
-        "Action": "lambda:InvokeFunction",
-        "Principal": "apigateway.amazonaws.com",
-        "SourceArn": {
-          "Fn::Join": [
-            "",
-            [
-              "arn:",
-              {
-                "Ref": "AWS::Partition"
-              },
-              ":execute-api:",
-              {
-                "Ref": "AWS::Region"
-              },
-              ":",
-              {
-                "Ref": "AWS::AccountId"
-              },
-              ":",
-              {
-                "Ref": "ApiGatewayRestApi"
-              },
-              "/*/*"
-            ]
-          ]
-        }
-      }
-    },
-    "GetRealtimePriceLambdaPermissionApiGateway": {
-      "Type": "AWS::Lambda::Permission",
-      "Properties": {
-        "FunctionName": {
-          "Fn::GetAtt": [
-            "GetRealtimePriceLambdaFunction",
             "Arn"
           ]
         },
@@ -630,40 +391,22 @@
         "Name": "sls-stock-crawler-dev-PythonRequirementsLambdaLayerS3Key"
       }
     },
-    "StockInfoCrawlerLambdaFunctionQualifiedArn": {
-      "Description": "Current Lambda function version",
-      "Value": {
-        "Ref": "StockInfoCrawlerLambdaVersion8jXEFCZmJ9caaCwJaaAORgVvopmIj91ogB9t4XT4"
-      },
-      "Export": {
-        "Name": "sls-stock-crawler-dev-StockInfoCrawlerLambdaFunctionQualifiedArn"
-      }
-    },
-    "MainCrawlerLambdaFunctionQualifiedArn": {
-      "Description": "Current Lambda function version",
-      "Value": {
-        "Ref": "MainCrawlerLambdaVersion9H8Q5215SUms49HPe8zqPNtOVsfU9D37wvFRDCWuQ8"
-      },
-      "Export": {
-        "Name": "sls-stock-crawler-dev-MainCrawlerLambdaFunctionQualifiedArn"
-      }
-    },
     "IndexCrawlerLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "IndexCrawlerLambdaVersionNXjl99Tnf5cyjYaRgo1VY4Bg9DDTNio6WGfGXhSns"
+        "Ref": "IndexCrawlerLambdaVersionkvKgv1lKXoQMbxXvqF4TCHWixgb6fwl1TuevxjFI"
       },
       "Export": {
         "Name": "sls-stock-crawler-dev-IndexCrawlerLambdaFunctionQualifiedArn"
       }
     },
-    "GetRealtimePriceLambdaFunctionQualifiedArn": {
+    "MainCrawlerLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "GetRealtimePriceLambdaVersionOe37ql6qKIt3I0tMLr9dCrXNMvL1RzgokdcKngHbmk"
+        "Ref": "MainCrawlerLambdaVersionxU9KjjW4zvdknSnS5qP2hfhlMQFrsph1FlSR6JMs"
       },
       "Export": {
-        "Name": "sls-stock-crawler-dev-GetRealtimePriceLambdaFunctionQualifiedArn"
+        "Name": "sls-stock-crawler-dev-MainCrawlerLambdaFunctionQualifiedArn"
       }
     },
     "ServiceEndpoint": {

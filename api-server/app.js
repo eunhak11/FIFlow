@@ -556,16 +556,20 @@ app.post('/dev/auth/kakao/callback', async (req, res) => {
     if (user.length > 0) {
       user = user[0];
       console.log('Updating existing user:', user);
+      let updateExpression = 'SET nickname = :nickname, lastLoginAt = :lastLoginAt, updatedAt = :updatedAt, email = :email';
+      const expressionAttributeValues = {
+        ':nickname': nickname || user.nickname || '사용자',
+        ':lastLoginAt': new Date().toISOString(),
+        ':updatedAt': new Date().toISOString(),
+        ':email': email || user.email || 'temp@email.com', // Always set email to a non-null value
+      };
+
       const updateParams = {
         TableName: DYNAMODB_TABLE,
         Key: { PK: `USER#${kakaoIdStr}`, SK: 'PROFILE' },
-        UpdateExpression: 'SET nickname = :nickname, email = :email, lastLoginAt = :lastLoginAt, updatedAt = :updatedAt',
-        ExpressionAttributeValues: {
-          ':nickname': nickname || user.nickname || '사용자',
-          ':email': email || user.email || null,
-          ':lastLoginAt': new Date().toISOString(),
-          ':updatedAt': new Date().toISOString(),
-        },
+        UpdateExpression: updateExpression,
+        ExpressionAttributeValues: expressionAttributeValues,
+        ReturnValues: 'UPDATED_NEW', // Optional: to see what was updated
       };
       await dynamoDb.send(new UpdateCommand(updateParams)).catch((err) => {
         console.error('update user error:', err.message, err.stack);

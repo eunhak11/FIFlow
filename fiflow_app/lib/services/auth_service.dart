@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // PlatformException을 위해 추가
 
 class AuthService {
   static const _storage = FlutterSecureStorage();
@@ -24,7 +25,18 @@ class AuthService {
 
   // JWT 토큰 가져오기
   static Future<String?> getToken() async {
-    return await _storage.read(key: _tokenKey);
+    try {
+      return await _storage.read(key: _tokenKey);
+    } catch (e) {
+      // Catch specific PlatformException for decryption errors
+      if (e is PlatformException && e.message != null && e.message!.contains('BadPaddingException')) {
+        print('Decryption error when reading token: $e. Deleting corrupted token.');
+        await deleteToken(); // Delete the corrupted token
+        return null; // Act as if no token was found
+      }
+      print('Error reading token from secure storage: $e');
+      return null; // For other errors, treat as no token
+    }
   }
 
   // JWT 토큰 삭제
