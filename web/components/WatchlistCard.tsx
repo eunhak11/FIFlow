@@ -63,7 +63,7 @@ export default function WatchlistCard({ item }: { item: WatchlistItem }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
-              <span style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text)' }}>{item.name}</span>
+              <span style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text)' }}>{item.name}</span>
               <button
                 onClick={(e) => { e.stopPropagation(); handleToggle() }}
                 style={{
@@ -79,30 +79,30 @@ export default function WatchlistCard({ item }: { item: WatchlistItem }) {
                 {item.is_favorite ? '★' : '☆'}
               </button>
             </div>
-            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{item.symbol}</span>
+            <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{item.symbol}</span>
           </div>
 
           <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text)', marginBottom: '4px' }}>
-              {price ? price.price.toLocaleString() : '—'}
+            <div style={{ fontSize: '19px', fontWeight: 700, color: 'var(--text)', marginBottom: '4px' }}>
+              {price ? `${price.price.toLocaleString()}원` : '—'}
             </div>
             {price && (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '3px' }}>
                 <span
                   style={{
                     display: 'inline-block',
-                    fontSize: '12px',
-                    fontWeight: 600,
+                    fontSize: '14px',
+                    fontWeight: 700,
                     background: isUp ? 'var(--color-up-bg)' : isDown ? 'var(--color-down-bg)' : 'var(--stats-bg)',
                     color: isUp ? 'var(--color-up-text)' : isDown ? 'var(--color-down-text)' : 'var(--text-muted)',
                     padding: '2px 8px',
                     borderRadius: '5px',
                   }}
                 >
-                  {price.change > 0 ? '+' : ''}{price.change.toLocaleString()}
-                </span>
-                <span style={{ fontSize: '11px', color: isUp ? 'var(--color-up)' : isDown ? 'var(--color-down)' : 'var(--text-muted)' }}>
                   {price.change_rate > 0 ? '+' : ''}{price.change_rate.toFixed(2)}%
+                </span>
+                <span style={{ fontSize: '12px', color: isUp ? 'var(--color-up)' : isDown ? 'var(--color-down)' : 'var(--text-muted)' }}>
+                  {price.change > 0 ? '+' : ''}{price.change.toLocaleString()}
                 </span>
               </div>
             )}

@@ -68,7 +68,7 @@ export default function MiniBarChart({ data }: { data: number[] }) {
                 left: `${x - 4}px`,
                 top: `${labelTop}px`,
                 width: `${bw + 8}px`,
-                fontSize: '10px',
+                fontSize: '11px',
                 fontWeight: 500,
                 color: labelColor,
                 textAlign: 'center',

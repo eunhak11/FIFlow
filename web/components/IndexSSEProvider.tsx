@@ -34,14 +34,14 @@ function IndexCard({ data }: { data: IndexData }) {
             animation: 'pulse 1.5s infinite',
           }}
         />
-        <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.03em' }}>
+        <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.03em' }}>
           {index_name}
         </span>
       </div>
-      <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text)', marginBottom: '3px' }}>
+      <div style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text)', marginBottom: '3px' }}>
         {p.toLocaleString()}
       </div>
-      <div style={{ fontSize: '11px', fontWeight: 600, color }}>
+      <div style={{ fontSize: '12px', fontWeight: 600, color }}>
         {isUp ? '▲' : isDown ? '▼' : ''} {sign}{cr.toFixed(2)}%
       </div>
     </div>
