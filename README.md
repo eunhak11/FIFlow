@@ -6,6 +6,10 @@
 |:---:|:---:|
 | ![dashboard](assets/home.png) | ![calendar](assets/calendar.png) |
 
+| 관심종목 관리 | 마이페이지 |
+|:---:|:---:|
+| ![manage](assets/manage.png) | ![my](assets/my.png) |
+
 ## 주요 기능
 
 - **실시간 지수** — KOSPI / KOSDAQ / KPI200 SSE 실시간 업데이트
