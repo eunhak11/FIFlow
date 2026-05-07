@@ -2,6 +2,10 @@
 
 외국인 투자 동향 및 주식 정보를 제공하는 개인용 금융 웹앱 (PWA)
 
+| 메인 대시보드 | 외국인 순매매 캘린더 |
+|:---:|:---:|
+| ![dashboard](assets/home.png) | ![calendar](assets/calendar.png) |
+
 ## 주요 기능
 
 - **실시간 지수** — KOSPI / KOSDAQ / KPI200 SSE 실시간 업데이트
