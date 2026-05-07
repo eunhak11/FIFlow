@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FIFlow v2 — Wireframe</title>
+  <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;600;700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --color-primary:   #DEFF9A;
+      --color-bg:        #050505;
+      --color-surface-1: #111111;
+      --color-surface-2: #1A1A1A;
+      --color-surface-3: #242424;
+      --color-border:    #2E2E2E;
+      --color-text-1:    #F5F5F5;
+      --color-text-2:    #A0A0A0;
+      --color-text-3:    #606060;
+      --color-buy:       #FF4E4E;
+      --color-sell:      #4E9EFF;
+      --font: 'Urbanist', 'Noto Sans KR', sans-serif;
+    }
+
+    body {
+      background: var(--color-bg);
+      color: var(--color-text-1);
+      font-family: var(--font);
+    }
+
+    /* ---- PAGE LAYOUT ---- */
+    .page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 48px 24px 96px;
+    }
+
+    /* ---- HEADER ---- */
+    .doc-header {
+      margin-bottom: 56px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .tag {
+      display: inline-block;
+      background: var(--color-primary);
+      color: var(--color-bg);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      padding: 4px 12px;
+      border-radius: 100px;
+      margin-bottom: 16px;
+    }
+    .doc-header h1 {
+      font-size: 36px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .doc-header h1 span { color: var(--color-primary); }
+    .doc-header p { color: var(--color-text-2); font-size: 14px; }
+
+    /* ---- SCREENS GRID ---- */
+    .screens-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 40px;
+      align-items: start;
+    }
+
+    .screen-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .screen-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .screen-num {
+      background: var(--color-surface-3);
+      color: var(--color-primary);
+      font-size: 11px;
+      font-weight: 700;
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .screen-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--color-text-1);
+    }
+    .screen-desc {
+      font-size: 11px;
+      color: var(--color-text-3);
+      margin-left: 34px;
+    }
+
+    /* ---- PHONE FRAME ---- */
+    .phone {
+      width: 100%;
+      max-width: 320px;
+      margin: 0 auto;
+      background: var(--color-surface-1);
+      border: 2px solid var(--color-border);
+      border-radius: 36px;
+      overflow: hidden;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+      position: relative;
+    }
+
+    /* status bar */
+    .status-bar {
+      background: var(--color-surface-1);
+      padding: 12px 20px 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .status-time { font-size: 12px; font-weight: 700; }
+    .status-icons { font-size: 11px; color: var(--color-text-2); }
+
+    /* content area */
+    .screen-content {
+      padding: 0 16px 16px;
+      min-height: 580px;
+      position: relative;
+    }
+
+    /* ---- REUSABLE PRIMITIVES ---- */
+    .section-title-sm {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--color-text-2);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .card {
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-border);
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 8px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 100px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+    .badge-buy  { background: rgba(255,78,78,0.15);  color: var(--color-buy); }
+    .badge-sell { background: rgba(78,158,255,0.15); color: var(--color-sell); }
+
+    .flex-between { display: flex; justify-content: space-between; align-items: center; }
+    .flex-center  { display: flex; align-items: center; gap: 6px; }
+
+    /* ---- SCREEN: LOGIN ---- */
+    .login-bg {
+      min-height: 620px;
+      background: var(--color-bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 24px;
+      text-align: center;
+    }
+    .login-logo {
+      width: 56px; height: 56px;
+      background: var(--color-primary);
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--color-bg);
+      margin: 0 auto 20px;
+    }
+    .login-title { font-size: 24px; font-weight: 800; margin-bottom: 4px; }
+    .login-sub   { font-size: 13px; color: var(--color-text-2); margin-bottom: 40px; }
+    .kakao-btn {
+      width: 100%;
+      background: #FEE500;
+      color: #191919;
+      border: none;
+      border-radius: 14px;
+      padding: 16px;
+      font-family: var(--font);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      margin-bottom: 12px;
+    }
+    .login-notice {
+      font-size: 10px;
+      color: var(--color-text-3);
+      line-height: 1.6;
+    }
+
+    /* ---- SCREEN: DASHBOARD ---- */
+    .app-header {
+      padding: 16px 0 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .app-logo { font-size: 18px; font-weight: 800; }
+    .app-logo span { color: var(--color-primary); }
+
+    /* Index cards row */
+    .index-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+    .index-card {
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      padding: 10px 8px;
+    }
+    .index-name {
+      font-size: 9px;
+      color: var(--color-text-2);
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+      display: flex; align-items: center; gap: 3px;
+    }
+    .live-dot {
+      width: 5px; height: 5px;
+      background: var(--color-primary);
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    .index-price { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+    .index-change { font-size: 9px; }
+    .up   { color: var(--color-buy); }
+    .down { color: var(--color-sell); }
+
+    /* Watchlist */
+    .stock-card {
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-border);
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 8px;
+    }
+    .stock-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+    .stock-name { font-size: 13px; font-weight: 700; }
+    .stock-code { font-size: 10px; color: var(--color-text-2); }
+    .stock-price { font-size: 16px; font-weight: 700; text-align: right; }
+    .fav { color: var(--color-primary); }
+
+    /* Bar chart mini */
+    .mini-chart {
+      display: flex;
+      height: 36px;
+      align-items: center;
+      gap: 3px;
+      position: relative;
+    }
+    .chart-line {
+      position: absolute;
+      left: 0; right: 0; top: 50%;
+      height: 1px;
+      background: var(--color-border);
+    }
+    .bar-col {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .bar { width: 100%; border-radius: 1px; }
+    .bar-u { background: var(--color-buy); }
+    .bar-d { background: var(--color-sell); }
+
+    /* Tab bar */
+    .tabbar {
+      position: sticky;
+      bottom: 0;
+      background: var(--color-surface-1);
+      border-top: 1px solid var(--color-border);
+      display: flex;
+      padding: 8px 0 16px;
+    }
+    .tab {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      font-size: 10px;
+      color: var(--color-text-3);
+    }
+    .tab.active { color: var(--color-primary); }
+    .tab-ico { font-size: 18px; }
+
+    /* ---- SCREEN: ADD STOCK ---- */
+    .add-header {
+      padding: 16px 0 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .back-btn {
+      width: 32px; height: 32px;
+      background: var(--color-surface-2);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      color: var(--color-text-2);
+    }
+    .add-title { font-size: 17px; font-weight: 700; }
+
+    .search-box {
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-family: var(--font);
+      font-size: 14px;
+      color: var(--color-text-1);
+      width: 100%;
+      outline: none;
+      margin-bottom: 16px;
+    }
+
+    .result-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .result-name { font-size: 14px; font-weight: 600; }
+    .result-code { font-size: 11px; color: var(--color-text-2); margin-top: 2px; }
+    .add-btn {
+      background: var(--color-primary);
+      color: var(--color-bg);
+      border: none;
+      border-radius: 100px;
+      padding: 6px 14px;
+      font-family: var(--font);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* ---- SCREEN: MY PAGE ---- */
+    .my-avatar {
+      width: 56px; height: 56px;
+      background: var(--color-surface-3);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+    .my-name { font-size: 17px; font-weight: 700; }
+    .my-email { font-size: 11px; color: var(--color-text-2); margin-bottom: 24px; }
+
+    .my-menu-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--color-border);
+      font-size: 14px;
+    }
+    .my-menu-item:last-child { border-bottom: none; }
+    .my-menu-arrow { color: var(--color-text-3); }
+
+    /* ---- ANNOTATION ---- */
+    .annotation {
+      background: rgba(222,255,154,0.06);
+      border: 1px solid rgba(222,255,154,0.2);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 11px;
+      color: var(--color-text-2);
+      line-height: 1.6;
+      margin-top: 10px;
+    }
+    .annotation strong { color: var(--color-primary); }
+
+    /* ---- USER FLOW ---- */
+    .flow-section {
+      margin-bottom: 64px;
+    }
+    .flow-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--color-primary);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .flow-heading {
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .flow-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+    .flow-node {
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .flow-arrow { color: var(--color-text-3); font-size: 16px; }
+    .flow-node.active {
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+      background: rgba(222,255,154,0.06);
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <header class="doc-header">
+    <div class="tag">UI Wireframe</div>
+    <h1>FIFlow v2<br /><span>화면 설계서</span></h1>
+    <p>전체 화면 와이어프레임 및 사용자 흐름 정의</p>
+  </header>
+
+  <!-- USER FLOW -->
+  <div class="flow-section">
+    <div class="flow-title">User Flow</div>
+    <div class="flow-heading">사용자 흐름</div>
+    <div style="font-size:13px; color:var(--color-text-2); margin-bottom:20px;">
+      비로그인 상태의 모든 접근은 로그인 페이지로 리다이렉트된다 (Next.js 미들웨어).
+    </div>
+
+    <div style="margin-bottom:16px;">
+      <div style="font-size:12px; color:var(--color-text-3); margin-bottom:8px;">인증 플로우</div>
+      <div class="flow-row">
+        <div class="flow-node">앱 진입</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">미들웨어 인증 확인</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node active">로그인 화면</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">카카오 OAuth</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node active">메인 대시보드</div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px;">
+      <div style="font-size:12px; color:var(--color-text-3); margin-bottom:8px;">종목 관리 플로우</div>
+      <div class="flow-row">
+        <div class="flow-node active">메인 대시보드</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">탭바 "종목" 탭</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node active">종목 추가 화면</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">코드 검색</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">KIS API 종목명 조회</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">DB 저장</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node active">대시보드 갱신</div>
+      </div>
+    </div>
+
+    <div>
+      <div style="font-size:12px; color:var(--color-text-3); margin-bottom:8px;">실시간 데이터 플로우</div>
+      <div class="flow-row">
+        <div class="flow-node">KIS WebSocket</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">Python 프로세스</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">MySQL index_data</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">SSE /api/sse/index</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node active">지수 카드 자동 갱신</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREENS -->
+  <div class="flow-title" style="margin-bottom:8px;">Wireframes</div>
+  <div class="flow-heading">화면 와이어프레임</div>
+
+  <div class="screens-grid">
+
+    <!-- ========== SCREEN 1: LOGIN ========== -->
+    <div class="screen-wrap">
+      <div class="screen-label">
+        <div class="screen-num">1</div>
+        <div class="screen-name">로그인</div>
+      </div>
+      <div class="screen-desc">/login — 비로그인 시 모든 경로에서 리다이렉트</div>
+      <div class="phone">
+        <div class="status-bar">
+          <span class="status-time">9:41</span>
+          <span class="status-icons">▲ WiFi 🔋</span>
+        </div>
+        <div class="login-bg">
+          <div class="login-logo">FI</div>
+          <div class="login-title">FIFlow</div>
+          <div class="login-sub">외국인 투자 동향 실시간 모니터링</div>
+          <button class="kakao-btn">
+            <span>🟡</span> 카카오로 시작하기
+          </button>
+          <div class="login-notice">
+            로그인 시 이용약관 및 개인정보처리방침에 동의하게 됩니다.<br/>
+            카카오 계정을 통해 안전하게 인증됩니다.
+          </div>
+        </div>
+      </div>
+      <div class="annotation">
+        <strong>NextAuth.js</strong> 카카오 Provider 연동<br/>
+        미인증 상태에서 Next.js 미들웨어가 자동 리다이렉트<br/>
+        로그인 성공 시 session 저장 → 대시보드로 이동
+      </div>
+    </div>
+
+    <!-- ========== SCREEN 2: DASHBOARD ========== -->
+    <div class="screen-wrap">
+      <div class="screen-label">
+        <div class="screen-num">2</div>
+        <div class="screen-name">메인 대시보드</div>
+      </div>
+      <div class="screen-desc">/ — 핵심 화면, 지수 + 관심 종목</div>
+      <div class="phone">
+        <div class="status-bar">
+          <span class="status-time">9:41</span>
+          <span class="status-icons">▲ WiFi 🔋</span>
+        </div>
+        <div class="screen-content">
+
+          <!-- App Header -->
+          <div class="app-header">
+            <div class="app-logo">FI<span>Flow</span></div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <div style="font-size:10px;color:var(--color-primary);display:flex;align-items:center;gap:4px;">
+                <div class="live-dot"></div> 실시간
+              </div>
+            </div>
+          </div>
+
+          <!-- Index Cards -->
+          <div style="font-size:10px;color:var(--color-text-3);margin-bottom:6px;">주요 지수</div>
+          <div class="index-row">
+            <div class="index-card">
+              <div class="index-name"><div class="live-dot"></div>KOSPI</div>
+              <div class="index-price">2,654</div>
+              <div class="index-change up">▲ +0.47%</div>
+            </div>
+            <div class="index-card">
+              <div class="index-name"><div class="live-dot"></div>KOSDAQ</div>
+              <div class="index-price">862</div>
+              <div class="index-change down">▼ -0.49%</div>
+            </div>
+            <div class="index-card">
+              <div class="index-name"><div class="live-dot"></div>KPI200</div>
+              <div class="index-price">354</div>
+              <div class="index-change up">▲ +0.51%</div>
+            </div>
+          </div>
+
+          <!-- Watchlist -->
+          <div style="font-size:10px;color:var(--color-text-3);margin-bottom:8px;">관심 종목</div>
+
+          <!-- Stock 1 (favorite) -->
+          <div class="stock-card">
+            <div class="stock-header">
+              <div>
+                <div style="display:flex;gap:4px;align-items:center;">
+                  <div class="stock-name">삼성전자</div>
+                  <span class="fav">★</span>
+                </div>
+                <div class="stock-code">005930</div>
+              </div>
+              <div>
+                <div class="stock-price">78,500</div>
+                <span class="badge badge-buy">▲ +1.29%</span>
+              </div>
+            </div>
+            <div style="font-size:9px;color:var(--color-text-3);margin-bottom:3px;">외국인 순매수 8일</div>
+            <div class="mini-chart">
+              <div class="chart-line"></div>
+              <div class="bar-col"><div class="bar bar-u" style="height:10px;"></div><div style="height:18px;"></div></div>
+              <div class="bar-col"><div class="bar bar-u" style="height:16px;"></div><div style="height:18px;"></div></div>
+              <div class="bar-col"><div style="height:18px;"></div><div class="bar bar-d" style="height:8px;"></div></div>
+              <div class="bar-col"><div style="height:18px;"></div><div class="bar bar-d" style="height:14px;"></div></div>
+              <div class="bar-col"><div class="bar bar-u" style="height:6px;"></div><div style="height:18px;"></div></div>
+              <div class="bar-col"><div class="bar bar-u" style="height:18px;"></div><div style="height:18px;"></div></div>
+              <div class="bar-col"><div style="height:18px;"></div><div class="bar bar-d" style="height:5px;"></div></div>
+              <div class="bar-col"><div class="bar bar-u" style="height:13px;"></div><div style="height:18px;"></div></div>
+            </div>
+          </div>
+
+          <!-- Stock 2 -->
+          <div class="stock-card">
+            <div class="stock-header">
+              <div>
+                <div class="stock-name">SK하이닉스</div>
+                <div class="stock-code">000660</div>
+              </div>
+              <div>
+                <div class="stock-price">196,000</div>
+                <span class="badge badge-sell">▼ -0.76%</span>
+              </div>
+            </div>
+            <div style="font-size:9px;color:var(--color-text-3);margin-bottom:3px;">외국인 순매수 8일</div>
+            <div class="mini-chart">
+              <div class="chart-line"></div>
+              <div class="bar-col"><div style="height:18px;"></div><div class="bar bar-d" style="height:12px;"></div></div>
+              <div class="bar-col"><div class="bar bar-u" style="height:8px;"></div><div style="height:18px;"></div></div>
+              <div class="bar-col"><div class="bar bar-u" style="height:14px;"></div><div style="height:18px;"></div></div>
+              <div class="bar-col"><div style="height:18px;"></div><div class="bar bar-d" style="height:9px;"></div></div>
+              <div class="bar-col"><div style="height:18px;"></div><div class="bar bar-d" style="height:16px;"></div></div>
+              <div class="bar-col"><div class="bar bar-u" style="height:10px;"></div><div style="height:18px;"></div></div>
+              <div class="bar-col"><div class="bar bar-u" style="height:18px;"></div><div style="height:18px;"></div></div>
+              <div class="bar-col"><div style="height:18px;"></div><div class="bar bar-d" style="height:6px;"></div></div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Tab Bar -->
+        <div class="tabbar">
+          <div class="tab active"><span class="tab-ico">⌂</span>홈</div>
+          <div class="tab"><span class="tab-ico">＋</span>종목</div>
+          <div class="tab"><span class="tab-ico">◉</span>마이</div>
+        </div>
+      </div>
+      <div class="annotation">
+        <strong>SSE</strong> /api/sse/index 구독 → 지수 실시간 갱신<br/>
+        <strong>관심 종목</strong> KIS REST API 30초 폴링<br/>
+        <strong>★ 즐겨찾기</strong> 종목은 목록 최상단 고정<br/>
+        <strong>바 차트</strong> 매수↑ 빨강, 매도↓ 파랑, 중간선 기준
+      </div>
+    </div>
+
+    <!-- ========== SCREEN 3: ADD STOCK ========== -->
+    <div class="screen-wrap">
+      <div class="screen-label">
+        <div class="screen-num">3</div>
+        <div class="screen-name">종목 추가</div>
+      </div>
+      <div class="screen-desc">/watchlist/add — 탭바 "종목" 탭</div>
+      <div class="phone">
+        <div class="status-bar">
+          <span class="status-time">9:41</span>
+          <span class="status-icons">▲ WiFi 🔋</span>
+        </div>
+        <div class="screen-content">
+          <div class="add-header">
+            <div class="back-btn">←</div>
+            <div class="add-title">종목 추가</div>
+          </div>
+
+          <div style="font-size:13px; color:var(--color-text-2); margin-bottom:16px; line-height:1.5;">
+            종목 코드를 입력하면 KIS API에서 종목명을 자동으로 조회합니다.
+          </div>
+
+          <input class="search-box" type="text" placeholder="종목 코드 입력 (예: 005930)" />
+
+          <div style="font-size:10px; color:var(--color-text-3); margin-bottom:12px;">검색 결과</div>
+
+          <div class="result-item">
+            <div>
+              <div class="result-name">삼성전자</div>
+              <div class="result-code">005930 · KOSPI</div>
+            </div>
+            <button class="add-btn">+ 추가</button>
+          </div>
+
+          <div class="result-item">
+            <div>
+              <div class="result-name">삼성전자우</div>
+              <div class="result-code">005935 · KOSPI</div>
+            </div>
+            <button class="add-btn">+ 추가</button>
+          </div>
+
+          <div class="result-item">
+            <div>
+              <div class="result-name">삼성SDI</div>
+              <div class="result-code">006400 · KOSPI</div>
+            </div>
+            <button class="add-btn">+ 추가</button>
+          </div>
+
+          <div style="margin-top:24px; padding:12px; background:var(--color-surface-2); border-radius:10px;">
+            <div style="font-size:10px; color:var(--color-text-3); margin-bottom:8px;">현재 관심 종목 (2)</div>
+            <div class="flex-between" style="padding:8px 0; border-bottom:1px solid var(--color-border);">
+              <div>
+                <div style="font-size:13px; font-weight:600;">삼성전자</div>
+                <div style="font-size:10px; color:var(--color-text-3);">005930</div>
+              </div>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <span style="color:var(--color-primary); font-size:16px;">★</span>
+                <span style="color:var(--color-text-3); font-size:16px;">✕</span>
+              </div>
+            </div>
+            <div class="flex-between" style="padding:8px 0;">
+              <div>
+                <div style="font-size:13px; font-weight:600;">SK하이닉스</div>
+                <div style="font-size:10px; color:var(--color-text-3);">000660</div>
+              </div>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <span style="color:var(--color-text-3); font-size:16px;">☆</span>
+                <span style="color:var(--color-text-3); font-size:16px;">✕</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tabbar">
+          <div class="tab"><span class="tab-ico">⌂</span>홈</div>
+          <div class="tab active"><span class="tab-ico">＋</span>종목</div>
+          <div class="tab"><span class="tab-ico">◉</span>마이</div>
+        </div>
+      </div>
+      <div class="annotation">
+        <strong>종목 코드 입력</strong> → KIS API 종목명 조회<br/>
+        <strong>추가</strong> → MySQL watchlist INSERT (user_id, symbol, name)<br/>
+        <strong>★ / ☆</strong> 즐겨찾기 토글 → is_favorite UPDATE<br/>
+        <strong>✕</strong> 관심 종목 삭제 → DELETE
+      </div>
+    </div>
+
+    <!-- ========== SCREEN 4: MY PAGE ========== -->
+    <div class="screen-wrap">
+      <div class="screen-label">
+        <div class="screen-num">4</div>
+        <div class="screen-name">마이 페이지</div>
+      </div>
+      <div class="screen-desc">/my — 계정 정보 및 설정</div>
+      <div class="phone">
+        <div class="status-bar">
+          <span class="status-time">9:41</span>
+          <span class="status-icons">▲ WiFi 🔋</span>
+        </div>
+        <div class="screen-content">
+          <div class="app-header">
+            <div class="add-title">마이</div>
+          </div>
+
+          <!-- Profile -->
+          <div style="text-align:center; padding: 16px 0 8px;">
+            <div class="my-avatar" style="margin:0 auto 8px;">👤</div>
+            <div class="my-name">홍길동</div>
+            <div class="my-email">honggildong@kakao.com</div>
+          </div>
+
+          <!-- Stats -->
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:24px;">
+            <div style="background:var(--color-surface-2); border:1px solid var(--color-border); border-radius:12px; padding:12px; text-align:center;">
+              <div style="font-size:20px; font-weight:800; color:var(--color-primary);">2</div>
+              <div style="font-size:10px; color:var(--color-text-2);">관심 종목</div>
+            </div>
+            <div style="background:var(--color-surface-2); border:1px solid var(--color-border); border-radius:12px; padding:12px; text-align:center;">
+              <div style="font-size:20px; font-weight:800; color:var(--color-primary);">1</div>
+              <div style="font-size:10px; color:var(--color-text-2);">즐겨찾기</div>
+            </div>
+          </div>
+
+          <!-- Menu -->
+          <div style="font-size:10px; color:var(--color-text-3); margin-bottom:8px;">설정</div>
+          <div class="my-menu-item">
+            <span>알림 설정</span>
+            <span class="my-menu-arrow">›</span>
+          </div>
+          <div class="my-menu-item">
+            <span>데이터 갱신 주기</span>
+            <span style="font-size:11px; color:var(--color-primary);">30초</span>
+          </div>
+          <div class="my-menu-item">
+            <span>이용약관</span>
+            <span class="my-menu-arrow">›</span>
+          </div>
+          <div class="my-menu-item">
+            <span>개인정보처리방침</span>
+            <span class="my-menu-arrow">›</span>
+          </div>
+          <div class="my-menu-item" style="color:var(--color-sell);">
+            <span>로그아웃</span>
+          </div>
+        </div>
+
+        <div class="tabbar">
+          <div class="tab"><span class="tab-ico">⌂</span>홈</div>
+          <div class="tab"><span class="tab-ico">＋</span>종목</div>
+          <div class="tab active"><span class="tab-ico">◉</span>마이</div>
+        </div>
+      </div>
+      <div class="annotation">
+        <strong>프로필</strong> NextAuth session에서 nickname, email 표시<br/>
+        <strong>관심 종목 수</strong> MySQL watchlist COUNT 조회<br/>
+        <strong>로그아웃</strong> NextAuth signOut() → 세션 삭제 → /login
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FIFlow v2 — Style Guide</title>
+  <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    /* =========================================
+       BASE RESET & ROOT VARS
+    ========================================= */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      /* --- Color Palette --- */
+      --color-primary:      #DEFF9A;
+      --color-primary-dim:  #B8D975;
+      --color-primary-muted:#8EAA52;
+
+      --color-bg:           #050505;
+      --color-surface-1:    #111111;
+      --color-surface-2:    #1A1A1A;
+      --color-surface-3:    #242424;
+      --color-border:       #2E2E2E;
+
+      --color-text-primary: #F5F5F5;
+      --color-text-secondary:#A0A0A0;
+      --color-text-tertiary: #606060;
+
+      --color-buy:          #FF4E4E;   /* 순매수 / 상승 */
+      --color-sell:         #4E9EFF;   /* 순매도 / 하락 */
+      --color-neutral:      #A0A0A0;
+
+      /* --- Typography --- */
+      --font-primary: 'Urbanist', 'Noto Sans KR', sans-serif;
+
+      --text-h1:  40px;
+      --text-h2:  28px;
+      --text-h3:  20px;
+      --text-b1:  16px;
+      --text-b2:  14px;
+      --text-c1:  12px;
+      --text-c2:  10px;
+
+      /* --- Grid & Spacing (8px base) --- */
+      --grid-base:    8px;
+      --space-1:      8px;
+      --space-2:      16px;
+      --space-3:      24px;
+      --space-4:      32px;
+      --space-5:      40px;
+      --space-6:      48px;
+
+      --padding-page: 16px;
+      --radius-sm:    8px;
+      --radius-md:    12px;
+      --radius-lg:    20px;
+      --radius-xl:    28px;
+    }
+
+    body {
+      background: var(--color-bg);
+      color: var(--color-text-primary);
+      font-family: var(--font-primary);
+      font-size: var(--text-b1);
+      line-height: 1.6;
+    }
+
+    /* =========================================
+       LAYOUT
+    ========================================= */
+    .page {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 48px 24px 96px;
+    }
+
+    section { margin-bottom: 80px; }
+
+    .section-label {
+      font-size: var(--text-c1);
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--color-primary);
+      margin-bottom: 8px;
+    }
+
+    .section-title {
+      font-size: var(--text-h2);
+      font-weight: 800;
+      color: var(--color-text-primary);
+      margin-bottom: 32px;
+      border-bottom: 1px solid var(--color-border);
+      padding-bottom: 16px;
+    }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+    /* =========================================
+       HEADER
+    ========================================= */
+    .doc-header {
+      margin-bottom: 64px;
+      padding-bottom: 40px;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .doc-header .tag {
+      display: inline-block;
+      background: var(--color-primary);
+      color: var(--color-bg);
+      font-size: var(--text-c1);
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      padding: 4px 12px;
+      border-radius: 100px;
+      margin-bottom: 16px;
+    }
+    .doc-header h1 {
+      font-size: var(--text-h1);
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 12px;
+    }
+    .doc-header h1 span { color: var(--color-primary); }
+    .doc-header p {
+      color: var(--color-text-secondary);
+      font-size: var(--text-b2);
+    }
+    .meta-row {
+      display: flex;
+      gap: 24px;
+      margin-top: 24px;
+    }
+    .meta-item { font-size: var(--text-c1); color: var(--color-text-tertiary); }
+    .meta-item strong { color: var(--color-text-secondary); }
+
+    /* =========================================
+       COLOR PALETTE
+    ========================================= */
+    .color-card {
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--color-border);
+    }
+    .color-swatch {
+      height: 100px;
+      width: 100%;
+    }
+    .color-info {
+      background: var(--color-surface-1);
+      padding: 12px 14px;
+    }
+    .color-name {
+      font-size: var(--text-b2);
+      font-weight: 600;
+      color: var(--color-text-primary);
+      margin-bottom: 2px;
+    }
+    .color-hex {
+      font-size: var(--text-c1);
+      color: var(--color-text-secondary);
+      font-family: 'Courier New', monospace;
+    }
+    .color-desc {
+      font-size: var(--text-c2);
+      color: var(--color-text-tertiary);
+      margin-top: 4px;
+    }
+
+    .color-group-label {
+      font-size: var(--text-c1);
+      font-weight: 600;
+      color: var(--color-text-secondary);
+      margin: 24px 0 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    /* =========================================
+       TYPOGRAPHY
+    ========================================= */
+    .type-row {
+      display: flex;
+      align-items: baseline;
+      gap: 24px;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .type-meta {
+      width: 140px;
+      flex-shrink: 0;
+    }
+    .type-token {
+      font-size: var(--text-c1);
+      font-weight: 700;
+      color: var(--color-primary);
+      font-family: 'Courier New', monospace;
+    }
+    .type-spec {
+      font-size: var(--text-c2);
+      color: var(--color-text-tertiary);
+      margin-top: 4px;
+    }
+    .type-sample { flex: 1; color: var(--color-text-primary); }
+
+    /* =========================================
+       GRID SYSTEM
+    ========================================= */
+    .grid-demo {
+      background: var(--color-surface-1);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border);
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+    .grid-columns {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    .grid-col {
+      background: rgba(222, 255, 154, 0.08);
+      border: 1px solid rgba(222, 255, 154, 0.2);
+      border-radius: 4px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-c2);
+      color: var(--color-primary);
+    }
+    .spacing-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+    .spacing-bar {
+      background: rgba(222, 255, 154, 0.15);
+      border: 1px solid rgba(222, 255, 154, 0.3);
+      border-radius: 2px;
+      height: 24px;
+    }
+    .spacing-label {
+      font-size: var(--text-c1);
+      color: var(--color-text-secondary);
+      font-family: 'Courier New', monospace;
+      width: 80px;
+      flex-shrink: 0;
+    }
+    .spacing-value {
+      font-size: var(--text-c2);
+      color: var(--color-text-tertiary);
+    }
+
+    .radius-row {
+      display: flex;
+      gap: 16px;
+      align-items: flex-end;
+      flex-wrap: wrap;
+    }
+    .radius-box {
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-border);
+      width: 72px;
+      height: 72px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+    .radius-token {
+      font-size: var(--text-c2);
+      color: var(--color-primary);
+      font-family: 'Courier New', monospace;
+    }
+    .radius-px {
+      font-size: var(--text-c2);
+      color: var(--color-text-tertiary);
+    }
+
+    /* =========================================
+       COMPONENT LIBRARY
+    ========================================= */
+    .component-block {
+      background: var(--color-surface-1);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+    .component-title {
+      font-size: var(--text-c1);
+      font-weight: 600;
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 20px;
+    }
+
+    /* Buttons */
+    .btn-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font-primary);
+      font-weight: 600;
+      border-radius: var(--radius-xl);
+      transition: opacity 0.15s;
+    }
+    .btn-primary {
+      background: var(--color-primary);
+      color: var(--color-bg);
+      font-size: var(--text-b1);
+      padding: 14px 28px;
+    }
+    .btn-secondary {
+      background: var(--color-surface-3);
+      color: var(--color-text-primary);
+      font-size: var(--text-b1);
+      padding: 14px 28px;
+      border: 1px solid var(--color-border);
+    }
+    .btn-ghost {
+      background: transparent;
+      color: var(--color-primary);
+      font-size: var(--text-b1);
+      padding: 14px 28px;
+      border: 1px solid var(--color-primary);
+    }
+    .btn-sm {
+      font-size: var(--text-c1);
+      padding: 8px 16px;
+    }
+
+    /* Badges */
+    .badge-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 100px;
+      font-size: var(--text-c1);
+      font-weight: 700;
+    }
+    .badge-buy  { background: rgba(255, 78, 78, 0.15); color: var(--color-buy); }
+    .badge-sell { background: rgba(78, 158, 255, 0.15); color: var(--color-sell); }
+    .badge-neutral { background: var(--color-surface-3); color: var(--color-text-secondary); }
+
+    /* Index Card */
+    .index-card {
+      background: var(--color-surface-1);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+    }
+    .index-card-name {
+      font-size: var(--text-c1);
+      color: var(--color-text-secondary);
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+    .index-card-price {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--color-text-primary);
+      margin-bottom: 4px;
+    }
+    .index-card-change { font-size: var(--text-c1); }
+    .up   { color: var(--color-buy); }
+    .down { color: var(--color-sell); }
+    .dot-live {
+      display: inline-block;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--color-primary);
+      margin-right: 4px;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.3; }
+    }
+
+    /* Stock Card */
+    .stock-card {
+      background: var(--color-surface-1);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+    }
+    .stock-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+    .stock-card-name { font-size: var(--text-b1); font-weight: 700; }
+    .stock-card-code { font-size: var(--text-c1); color: var(--color-text-secondary); margin-top: 2px; }
+    .stock-card-price-wrap { text-align: right; }
+    .stock-card-price { font-size: 20px; font-weight: 700; }
+    .fav-star { color: var(--color-primary); font-size: 18px; }
+
+    /* Bar Chart Mini */
+    .bar-chart {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      height: 56px;
+      position: relative;
+    }
+    .bar-chart-line {
+      position: absolute;
+      left: 0; right: 0;
+      top: 50%;
+      height: 1px;
+      background: var(--color-border);
+    }
+    .bar-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      gap: 1px;
+    }
+    .bar {
+      width: 100%;
+      border-radius: 2px;
+      min-height: 3px;
+    }
+    .bar-up   { background: var(--color-buy); }
+    .bar-down { background: var(--color-sell); }
+    .bar-label {
+      font-size: 8px;
+      color: var(--color-text-tertiary);
+      text-align: center;
+    }
+
+    /* Input */
+    .input-demo {
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      font-family: var(--font-primary);
+      font-size: var(--text-b1);
+      color: var(--color-text-primary);
+      width: 100%;
+      max-width: 320px;
+      outline: none;
+    }
+    .input-demo:focus {
+      border-color: var(--color-primary);
+    }
+    .input-demo::placeholder { color: var(--color-text-tertiary); }
+
+    /* Tab Bar */
+    .tabbar {
+      background: var(--color-surface-1);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-around;
+      max-width: 360px;
+    }
+    .tab-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      font-size: var(--text-c2);
+      color: var(--color-text-tertiary);
+    }
+    .tab-item.active { color: var(--color-primary); }
+    .tab-icon { font-size: 20px; }
+
+    /* =========================================
+       TOC
+    ========================================= */
+    .toc {
+      background: var(--color-surface-1);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      margin-bottom: 64px;
+    }
+    .toc-title {
+      font-size: var(--text-b2);
+      font-weight: 700;
+      color: var(--color-text-secondary);
+      margin-bottom: 12px;
+    }
+    .toc a {
+      display: block;
+      font-size: var(--text-b2);
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      padding: 4px 0;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .toc a:last-child { border-bottom: none; }
+    .toc a:hover { color: var(--color-primary); }
+
+    /* =========================================
+       ICON SYSTEM
+    ========================================= */
+    .icon-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .icon-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      width: 80px;
+    }
+    .icon-item span:first-child { font-size: 24px; }
+    .icon-item span:last-child {
+      font-size: var(--text-c2);
+      color: var(--color-text-tertiary);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <header class="doc-header">
+    <div class="tag">Design System</div>
+    <h1>FIFlow v2<br /><span>Style Guide</span></h1>
+    <p>외국인 투자 동향 금융 앱 — 스타일 정의 문서</p>
+    <div class="meta-row">
+      <div class="meta-item"><strong>버전</strong> 1.0</div>
+      <div class="meta-item"><strong>테마</strong> 다크 / 고대비</div>
+      <div class="meta-item"><strong>폰트</strong> Urbanist</div>
+      <div class="meta-item"><strong>그리드</strong> 8px Base / 16px Padding</div>
+    </div>
+  </header>
+
+  <!-- TOC -->
+  <nav class="toc">
+    <div class="toc-title">목차</div>
+    <a href="#color">01. Color Palette</a>
+    <a href="#typography">02. Typography</a>
+    <a href="#grid">03. Grid &amp; Spacing</a>
+    <a href="#components">04. Component Library</a>
+    <a href="#icons">05. Icon System</a>
+  </nav>
+
+  <!-- ========== 01. COLOR PALETTE ========== -->
+  <section id="color">
+    <div class="section-label">01</div>
+    <div class="section-title">Color Palette</div>
+
+    <div class="color-group-label">Primary</div>
+    <div class="grid-3" style="margin-bottom:8px;">
+      <div class="color-card">
+        <div class="color-swatch" style="background:#DEFF9A;"></div>
+        <div class="color-info">
+          <div class="color-name">Primary</div>
+          <div class="color-hex">#DEFF9A</div>
+          <div class="color-desc">메인 액션, 강조 텍스트, 라이브 도트</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background:#B8D975;"></div>
+        <div class="color-info">
+          <div class="color-name">Primary Dim</div>
+          <div class="color-hex">#B8D975</div>
+          <div class="color-desc">호버, 눌림 상태</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background:#8EAA52;"></div>
+        <div class="color-info">
+          <div class="color-name">Primary Muted</div>
+          <div class="color-hex">#8EAA52</div>
+          <div class="color-desc">비활성 강조, 아이콘 서브</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="color-group-label">Background / Surface</div>
+    <div class="grid-4" style="margin-bottom:8px;">
+      <div class="color-card">
+        <div class="color-swatch" style="background:#050505; border-bottom:1px solid #2E2E2E;"></div>
+        <div class="color-info">
+          <div class="color-name">Background</div>
+          <div class="color-hex">#050505</div>
+          <div class="color-desc">최하단 배경</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background:#111111;"></div>
+        <div class="color-info">
+          <div class="color-name">Surface 1</div>
+          <div class="color-hex">#111111</div>
+          <div class="color-desc">카드, 시트</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background:#1A1A1A;"></div>
+        <div class="color-info">
+          <div class="color-name">Surface 2</div>
+          <div class="color-hex">#1A1A1A</div>
+          <div class="color-desc">인풋 배경, 중첩 카드</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background:#242424;"></div>
+        <div class="color-info">
+          <div class="color-name">Surface 3</div>
+          <div class="color-hex">#242424</div>
+          <div class="color-desc">버튼 secondary</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="color-group-label">Semantic</div>
+    <div class="grid-3">
+      <div class="color-card">
+        <div class="color-swatch" style="background:#FF4E4E;"></div>
+        <div class="color-info">
+          <div class="color-name">Buy / Up</div>
+          <div class="color-hex">#FF4E4E</div>
+          <div class="color-desc">순매수, 상승, 양수값</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background:#4E9EFF;"></div>
+        <div class="color-info">
+          <div class="color-name">Sell / Down</div>
+          <div class="color-hex">#4E9EFF</div>
+          <div class="color-desc">순매도, 하락, 음수값</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background:#A0A0A0;"></div>
+        <div class="color-info">
+          <div class="color-name">Neutral</div>
+          <div class="color-hex">#A0A0A0</div>
+          <div class="color-desc">보합, 비활성 텍스트</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="color-group-label">Text</div>
+    <div class="grid-3">
+      <div class="color-card">
+        <div class="color-swatch" style="background:#F5F5F5;"></div>
+        <div class="color-info">
+          <div class="color-name">Text Primary</div>
+          <div class="color-hex">#F5F5F5</div>
+          <div class="color-desc">본문, 수치, 제목</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background:#A0A0A0;"></div>
+        <div class="color-info">
+          <div class="color-name">Text Secondary</div>
+          <div class="color-hex">#A0A0A0</div>
+          <div class="color-desc">서브 라벨, 설명</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background:#606060;"></div>
+        <div class="color-info">
+          <div class="color-name">Text Tertiary</div>
+          <div class="color-hex">#606060</div>
+          <div class="color-desc">플레이스홀더, 힌트</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 02. TYPOGRAPHY ========== -->
+  <section id="typography">
+    <div class="section-label">02</div>
+    <div class="section-title">Typography</div>
+
+    <div class="component-block" style="margin-bottom:16px;">
+      <div class="component-title">Font Family — Urbanist</div>
+      <p style="color:var(--color-text-secondary); font-size:var(--text-b2); margin-bottom:16px;">
+        영문 수치 전용 디스플레이 폰트. 금융 데이터의 가독성과 현대적 감성을 동시에 충족.
+        한글 보조 폰트: Noto Sans KR.
+      </p>
+      <div style="font-size:32px; font-weight:800; letter-spacing:-0.02em;">
+        Aa Bb Cc 0123456789 +-%
+      </div>
+    </div>
+
+    <div class="component-block">
+      <div class="component-title">Type Scale</div>
+
+      <div class="type-row">
+        <div class="type-meta">
+          <div class="type-token">H1</div>
+          <div class="type-spec">40px / Weight 800<br/>Line-height 1.1</div>
+        </div>
+        <div class="type-sample" style="font-size:40px; font-weight:800; line-height:1.1;">
+          2,654.89
+        </div>
+      </div>
+
+      <div class="type-row">
+        <div class="type-meta">
+          <div class="type-token">H2</div>
+          <div class="type-spec">28px / Weight 700<br/>Line-height 1.2</div>
+        </div>
+        <div class="type-sample" style="font-size:28px; font-weight:700; line-height:1.2;">
+          KOSPI 지수
+        </div>
+      </div>
+
+      <div class="type-row">
+        <div class="type-meta">
+          <div class="type-token">H3</div>
+          <div class="type-spec">20px / Weight 700<br/>Line-height 1.3</div>
+        </div>
+        <div class="type-sample" style="font-size:20px; font-weight:700;">
+          삼성전자 005930
+        </div>
+      </div>
+
+      <div class="type-row">
+        <div class="type-meta">
+          <div class="type-token">B1</div>
+          <div class="type-spec">16px / Weight 500<br/>Line-height 1.6</div>
+        </div>
+        <div class="type-sample" style="font-size:16px; font-weight:500;">
+          관심 종목의 현재가와 외국인 순매수 동향을 실시간으로 확인하세요.
+        </div>
+      </div>
+
+      <div class="type-row">
+        <div class="type-meta">
+          <div class="type-token">B2</div>
+          <div class="type-spec">14px / Weight 400<br/>Line-height 1.6</div>
+        </div>
+        <div class="type-sample" style="font-size:14px; font-weight:400; color:var(--color-text-secondary);">
+          최근 8거래일 외국인 순매수량을 바 차트로 표시합니다.
+        </div>
+      </div>
+
+      <div class="type-row">
+        <div class="type-meta">
+          <div class="type-token">C1</div>
+          <div class="type-spec">12px / Weight 600<br/>Line-height 1.4</div>
+        </div>
+        <div class="type-sample" style="font-size:12px; font-weight:600; color:var(--color-text-secondary);">
+          LABEL · BADGE · CAPTION
+        </div>
+      </div>
+
+      <div class="type-row" style="border-bottom:none;">
+        <div class="type-meta">
+          <div class="type-token">C2</div>
+          <div class="type-spec">10px / Weight 500<br/>Line-height 1.4</div>
+        </div>
+        <div class="type-sample" style="font-size:10px; font-weight:500; color:var(--color-text-tertiary);">
+          차트 축 레이블 · 날짜 표시 · 미세 힌트
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 03. GRID & SPACING ========== -->
+  <section id="grid">
+    <div class="section-label">03</div>
+    <div class="section-title">Grid &amp; Spacing</div>
+
+    <div class="grid-demo">
+      <div class="component-title">Mobile Grid — 4 Column / 8px Gap / 16px Padding</div>
+      <div class="grid-columns">
+        <div class="grid-col">1</div>
+        <div class="grid-col">2</div>
+        <div class="grid-col">3</div>
+        <div class="grid-col">4</div>
+      </div>
+      <p style="font-size:var(--text-c1); color:var(--color-text-secondary);">
+        모바일 기준 최대 너비 390px. 4컬럼 그리드, 컬럼 간격 8px, 좌우 여백 16px.
+        지수 카드 3개는 각 1.33컬럼(균등 분할), 관심 종목 카드는 4컬럼 전체 사용.
+      </p>
+    </div>
+
+    <div class="component-block" style="margin-bottom:16px;">
+      <div class="component-title">Spacing Scale (8px Base)</div>
+      <div class="spacing-row">
+        <div class="spacing-label">space-1</div>
+        <div class="spacing-bar" style="width:8px;"></div>
+        <div class="spacing-value">8px — 아이콘 내부 간격, 뱃지 패딩</div>
+      </div>
+      <div class="spacing-row">
+        <div class="spacing-label">space-2</div>
+        <div class="spacing-bar" style="width:16px;"></div>
+        <div class="spacing-value">16px — 카드 내부 패딩, 페이지 좌우 여백</div>
+      </div>
+      <div class="spacing-row">
+        <div class="spacing-label">space-3</div>
+        <div class="spacing-bar" style="width:24px;"></div>
+        <div class="spacing-value">24px — 섹션 간 간격, 카드 상하 패딩</div>
+      </div>
+      <div class="spacing-row">
+        <div class="spacing-label">space-4</div>
+        <div class="spacing-bar" style="width:32px;"></div>
+        <div class="spacing-value">32px — 대형 섹션 분리</div>
+      </div>
+      <div class="spacing-row">
+        <div class="spacing-label">space-5</div>
+        <div class="spacing-bar" style="width:40px;"></div>
+        <div class="spacing-value">40px — 헤더 하단 여백</div>
+      </div>
+      <div class="spacing-row">
+        <div class="spacing-label">space-6</div>
+        <div class="spacing-bar" style="width:48px;"></div>
+        <div class="spacing-value">48px — 탭바 높이</div>
+      </div>
+    </div>
+
+    <div class="component-block">
+      <div class="component-title">Border Radius</div>
+      <div class="radius-row">
+        <div class="radius-box" style="border-radius:8px;">
+          <span class="radius-token">sm</span>
+          <span class="radius-px">8px</span>
+        </div>
+        <div class="radius-box" style="border-radius:12px;">
+          <span class="radius-token">md</span>
+          <span class="radius-px">12px</span>
+        </div>
+        <div class="radius-box" style="border-radius:20px;">
+          <span class="radius-token">lg</span>
+          <span class="radius-px">20px</span>
+        </div>
+        <div class="radius-box" style="border-radius:28px;">
+          <span class="radius-token">xl</span>
+          <span class="radius-px">28px</span>
+        </div>
+        <div class="radius-box" style="border-radius:100px; width:72px;">
+          <span class="radius-token">full</span>
+          <span class="radius-px">100px</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 04. COMPONENTS ========== -->
+  <section id="components">
+    <div class="section-label">04</div>
+    <div class="section-title">Component Library</div>
+
+    <!-- Buttons -->
+    <div class="component-block">
+      <div class="component-title">Buttons</div>
+      <div class="btn-row">
+        <button class="btn btn-primary">종목 추가</button>
+        <button class="btn btn-secondary">취소</button>
+        <button class="btn btn-ghost">더 보기</button>
+        <button class="btn btn-primary btn-sm">즐겨찾기</button>
+        <button class="btn btn-secondary btn-sm">삭제</button>
+      </div>
+    </div>
+
+    <!-- Badges -->
+    <div class="component-block">
+      <div class="component-title">Badges — 등락 뱃지</div>
+      <div class="badge-row">
+        <span class="badge badge-buy">▲ +2.34%</span>
+        <span class="badge badge-sell">▼ -1.12%</span>
+        <span class="badge badge-neutral">0.00%</span>
+        <span class="badge badge-buy">+2.8M</span>
+        <span class="badge badge-sell">-450K</span>
+      </div>
+    </div>
+
+    <!-- Index Cards -->
+    <div class="component-block">
+      <div class="component-title">Index Card — 지수 카드 (SSE 실시간)</div>
+      <div class="grid-3">
+        <div class="index-card">
+          <div class="index-card-name"><span class="dot-live"></span>KOSPI</div>
+          <div class="index-card-price">2,654.89</div>
+          <div class="index-card-change up">▲ +12.34 (+0.47%)</div>
+        </div>
+        <div class="index-card">
+          <div class="index-card-name"><span class="dot-live"></span>KOSDAQ</div>
+          <div class="index-card-price">862.14</div>
+          <div class="index-card-change down">▼ -4.21 (-0.49%)</div>
+        </div>
+        <div class="index-card">
+          <div class="index-card-name"><span class="dot-live"></span>KPI200</div>
+          <div class="index-card-price">354.70</div>
+          <div class="index-card-change up">▲ +1.80 (+0.51%)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stock Card -->
+    <div class="component-block">
+      <div class="component-title">Stock Card — 관심 종목 카드</div>
+      <div style="max-width:360px;">
+        <div class="stock-card">
+          <div class="stock-card-header">
+            <div>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <div class="stock-card-name">삼성전자</div>
+                <span class="fav-star">★</span>
+              </div>
+              <div class="stock-card-code">005930 · KOSPI</div>
+            </div>
+            <div class="stock-card-price-wrap">
+              <div class="stock-card-price">78,500</div>
+              <span class="badge badge-buy" style="font-size:10px; padding:2px 8px;">▲ +1.29%</span>
+            </div>
+          </div>
+          <!-- Mini Bar Chart -->
+          <div style="margin-bottom:6px;">
+            <div style="font-size:10px; color:var(--color-text-tertiary); margin-bottom:4px;">외국인 순매수 (8일)</div>
+            <div class="bar-chart">
+              <div class="bar-chart-line"></div>
+              <!-- up bars (top half) -->
+              <div class="bar-wrap">
+                <div class="bar bar-up" style="height:18px;"></div>
+                <div style="height:28px;"></div>
+              </div>
+              <div class="bar-wrap">
+                <div class="bar bar-up" style="height:26px;"></div>
+                <div style="height:28px;"></div>
+              </div>
+              <div class="bar-wrap">
+                <div style="height:28px;"></div>
+                <div class="bar bar-down" style="height:14px;"></div>
+              </div>
+              <div class="bar-wrap">
+                <div style="height:28px;"></div>
+                <div class="bar bar-down" style="height:22px;"></div>
+              </div>
+              <div class="bar-wrap">
+                <div class="bar bar-up" style="height:10px;"></div>
+                <div style="height:28px;"></div>
+              </div>
+              <div class="bar-wrap">
+                <div class="bar bar-up" style="height:28px;"></div>
+                <div style="height:28px;"></div>
+              </div>
+              <div class="bar-wrap">
+                <div style="height:28px;"></div>
+                <div class="bar bar-down" style="height:8px;"></div>
+              </div>
+              <div class="bar-wrap">
+                <div class="bar bar-up" style="height:22px;"></div>
+                <div style="height:28px;"></div>
+              </div>
+            </div>
+            <div style="display:flex; gap:4px; margin-top:2px;">
+              <div class="bar-label" style="flex:1;">+1.2M</div>
+              <div class="bar-label" style="flex:1;">+2.8M</div>
+              <div class="bar-label" style="flex:1; color:var(--color-sell);">-450K</div>
+              <div class="bar-label" style="flex:1; color:var(--color-sell);">-1.1M</div>
+              <div class="bar-label" style="flex:1;">+320K</div>
+              <div class="bar-label" style="flex:1;">+3.2M</div>
+              <div class="bar-label" style="flex:1; color:var(--color-sell);">-200K</div>
+              <div class="bar-label" style="flex:1;">+2.1M</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input -->
+    <div class="component-block">
+      <div class="component-title">Input Field</div>
+      <input class="input-demo" type="text" placeholder="종목 코드 입력 (예: 005930)" />
+    </div>
+
+    <!-- Tab Bar -->
+    <div class="component-block">
+      <div class="component-title">Tab Bar — 하단 고정 네비게이션</div>
+      <div class="tabbar">
+        <div class="tab-item active">
+          <span class="tab-icon">⌂</span>
+          <span>홈</span>
+        </div>
+        <div class="tab-item">
+          <span class="tab-icon">＋</span>
+          <span>종목</span>
+        </div>
+        <div class="tab-item">
+          <span class="tab-icon">◉</span>
+          <span>마이</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 05. ICON SYSTEM ========== -->
+  <section id="icons">
+    <div class="section-label">05</div>
+    <div class="section-title">Icon System</div>
+    <div class="component-block">
+      <div class="component-title">사용 아이콘 목록 (Unicode / Emoji 기반 — 추후 SVG 교체 예정)</div>
+      <div class="icon-grid">
+        <div class="icon-item"><span>★</span><span>즐겨찾기</span></div>
+        <div class="icon-item"><span>▲</span><span>상승</span></div>
+        <div class="icon-item"><span>▼</span><span>하락</span></div>
+        <div class="icon-item"><span>⌂</span><span>홈</span></div>
+        <div class="icon-item"><span>＋</span><span>추가</span></div>
+        <div class="icon-item"><span>◉</span><span>마이</span></div>
+        <div class="icon-item"><span>✕</span><span>삭제</span></div>
+        <div class="icon-item"><span>↻</span><span>갱신</span></div>
+        <div class="icon-item"><span>●</span><span>라이브</span></div>
+      </div>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

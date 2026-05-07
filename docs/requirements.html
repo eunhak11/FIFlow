@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FIFlow v2 — 요구사항분석서 / 기능명세서</title>
+  <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;600;700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --color-primary:   #DEFF9A;
+      --color-bg:        #050505;
+      --color-surface-1: #111111;
+      --color-surface-2: #1A1A1A;
+      --color-border:    #2E2E2E;
+      --color-text-1:    #F5F5F5;
+      --color-text-2:    #A0A0A0;
+      --color-text-3:    #606060;
+      --color-buy:       #FF4E4E;
+      --color-sell:      #4E9EFF;
+      --font: 'Urbanist', 'Noto Sans KR', sans-serif;
+    }
+
+    body {
+      background: var(--color-bg);
+      color: var(--color-text-1);
+      font-family: var(--font);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 56px 24px 96px;
+    }
+
+    /* ---- HEADER ---- */
+    .doc-header {
+      margin-bottom: 64px;
+      padding-bottom: 40px;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .tag {
+      display: inline-block;
+      background: var(--color-primary);
+      color: var(--color-bg);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      padding: 4px 12px;
+      border-radius: 100px;
+      margin-bottom: 16px;
+    }
+    .doc-title { font-size: 40px; font-weight: 800; line-height: 1.1; margin-bottom: 8px; }
+    .doc-title span { color: var(--color-primary); }
+    .doc-sub { color: var(--color-text-2); font-size: 15px; margin-bottom: 24px; }
+
+    .meta-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .meta-table td {
+      padding: 8px 12px;
+      border: 1px solid var(--color-border);
+    }
+    .meta-table td:first-child {
+      background: var(--color-surface-1);
+      color: var(--color-text-2);
+      font-weight: 600;
+      width: 120px;
+    }
+
+    /* ---- SECTIONS ---- */
+    section { margin-bottom: 72px; }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--color-primary);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .section-title {
+      font-size: 26px;
+      font-weight: 800;
+      margin-bottom: 24px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    /* ---- TABLE ---- */
+    .doc-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-bottom: 24px;
+    }
+    .doc-table th {
+      background: var(--color-surface-1);
+      color: var(--color-primary);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 10px 14px;
+      text-align: left;
+      border: 1px solid var(--color-border);
+    }
+    .doc-table td {
+      padding: 10px 14px;
+      border: 1px solid var(--color-border);
+      color: var(--color-text-1);
+      vertical-align: top;
+    }
+    .doc-table tr:nth-child(even) td { background: var(--color-surface-1); }
+    .doc-table td:first-child { color: var(--color-text-2); font-size: 12px; }
+
+    /* ---- FEATURE BLOCK ---- */
+    .feature-block {
+      background: var(--color-surface-1);
+      border: 1px solid var(--color-border);
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+    .feature-id {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--color-primary);
+      font-family: 'Courier New', monospace;
+      margin-bottom: 4px;
+    }
+    .feature-name {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .feature-desc {
+      font-size: 13px;
+      color: var(--color-text-2);
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+    .req-list { list-style: none; }
+    .req-list li {
+      font-size: 13px;
+      color: var(--color-text-1);
+      padding: 6px 0;
+      border-bottom: 1px solid var(--color-border);
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .req-list li:last-child { border-bottom: none; }
+    .req-tag {
+      flex-shrink: 0;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 100px;
+      font-family: 'Courier New', monospace;
+    }
+    .req-must    { background: rgba(222,255,154,0.12); color: var(--color-primary); }
+    .req-should  { background: rgba(255,78,78,0.12);   color: var(--color-buy); }
+    .req-nice    { background: rgba(160,160,160,0.12); color: var(--color-text-2); }
+
+    /* ---- PRIORITY BADGE ---- */
+    .priority {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 100px;
+    }
+    .p-high   { background: rgba(255,78,78,0.15);  color: var(--color-buy); }
+    .p-mid    { background: rgba(222,255,154,0.12); color: var(--color-primary); }
+    .p-low    { background: rgba(160,160,160,0.12); color: var(--color-text-2); }
+
+    /* ---- STATUS BADGE ---- */
+    .status {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 100px;
+    }
+    .s-todo    { background: var(--color-surface-2); color: var(--color-text-3); }
+    .s-dev     { background: rgba(78,158,255,0.15); color: var(--color-sell); }
+    .s-done    { background: rgba(222,255,154,0.12); color: var(--color-primary); }
+
+    /* ---- CALLOUT ---- */
+    .callout {
+      border-left: 3px solid var(--color-primary);
+      background: rgba(222,255,154,0.04);
+      border-radius: 0 8px 8px 0;
+      padding: 14px 18px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: var(--color-text-2);
+      line-height: 1.7;
+    }
+    .callout strong { color: var(--color-primary); }
+
+    /* ---- TOC ---- */
+    .toc {
+      background: var(--color-surface-1);
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 64px;
+    }
+    .toc-title { font-size: 13px; font-weight: 700; color: var(--color-text-2); margin-bottom: 12px; }
+    .toc a {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--color-text-2);
+      text-decoration: none;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .toc a:last-child { border-bottom: none; }
+    .toc a:hover { color: var(--color-primary); }
+    .toc-num { color: var(--color-text-3); font-family: 'Courier New', monospace; font-size: 11px; }
+
+    /* ---- FLOW DIAGRAM ---- */
+    .arch-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+      font-size: 12px;
+    }
+    .arch-node {
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      color: var(--color-text-2);
+    }
+    .arch-node.highlight {
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+      background: rgba(222,255,154,0.05);
+    }
+    .arch-arrow { color: var(--color-text-3); }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <header class="doc-header">
+    <div class="tag">Planning Document</div>
+    <div class="doc-title">FIFlow v2<br /><span>요구사항분석서</span></div>
+    <div class="doc-sub">외국인 투자 동향 실시간 모니터링 모바일 앱 — 기획 문서</div>
+    <table class="meta-table">
+      <tr><td>프로젝트명</td><td>FIFlow v2</td></tr>
+      <tr><td>문서 유형</td><td>요구사항분석서 + 기능명세서</td></tr>
+      <tr><td>버전</td><td>1.0</td></tr>
+      <tr><td>작성일</td><td>2026-05-07</td></tr>
+      <tr><td>타겟 플랫폼</td><td>모바일 웹 (PWA) — iOS / Android</td></tr>
+      <tr><td>상태</td><td>확정</td></tr>
+    </table>
+  </header>
+
+  <!-- TOC -->
+  <nav class="toc">
+    <div class="toc-title">목차</div>
+    <a href="#overview"><span>01. 프로젝트 개요</span><span class="toc-num">01</span></a>
+    <a href="#stakeholder"><span>02. 이해관계자 분석</span><span class="toc-num">02</span></a>
+    <a href="#problem"><span>03. 문제 정의 및 해결 방향</span><span class="toc-num">03</span></a>
+    <a href="#functional"><span>04. 기능 요구사항</span><span class="toc-num">04</span></a>
+    <a href="#nonfunctional"><span>05. 비기능 요구사항</span><span class="toc-num">05</span></a>
+    <a href="#spec"><span>06. 주요 기능 명세</span><span class="toc-num">06</span></a>
+    <a href="#roadmap"><span>07. 개발 로드맵</span><span class="toc-num">07</span></a>
+  </nav>
+
+  <!-- ========== 01. 개요 ========== -->
+  <section id="overview">
+    <div class="section-label">01</div>
+    <div class="section-title">프로젝트 개요</div>
+
+    <div class="callout">
+      <strong>FIFlow</strong>는 외국인 투자자의 순매수/순매도 동향과 주요 지수(KOSPI, KOSDAQ, KPI200)를 실시간으로 모니터링하는 개인용 금융 모바일 앱이다.
+      v1의 핵심 실패 원인인 <strong>콜드 스타트 지연</strong>과 <strong>실시간 데이터 불일치</strong>를 v2에서 구조적으로 해결한다.
+    </div>
+
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>항목</th><th>내용</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>서비스명</td><td>FIFlow v2 (Foreign Investor Flow)</td></tr>
+        <tr><td>서비스 유형</td><td>개인용 금융 정보 모바일 앱 (PWA)</td></tr>
+        <tr><td>주요 타겟</td><td>국내 주식 투자자 (1인, 개인용)</td></tr>
+        <tr><td>핵심 가치</td><td>외국인 투자 동향 + 지수 실시간 모니터링</td></tr>
+        <tr><td>플랫폼</td><td>모바일 웹 PWA (홈 화면 추가 시 네이티브 앱처럼 동작)</td></tr>
+        <tr><td>인증</td><td>카카오 소셜 로그인 (NextAuth.js)</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ========== 02. 이해관계자 ========== -->
+  <section id="stakeholder">
+    <div class="section-label">02</div>
+    <div class="section-title">이해관계자 분석</div>
+
+    <table class="doc-table">
+      <thead>
+        <tr><th>역할</th><th>대상</th><th>주요 니즈</th><th>성공 기준</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>최종 사용자</td>
+          <td>개인 주식 투자자 (앱 소유자)</td>
+          <td>외국인 동향 빠르게 확인, 관심 종목 시세 실시간 조회</td>
+          <td>로딩 2초 이내, 지수 2초 이내 갱신</td>
+        </tr>
+        <tr>
+          <td>운영자</td>
+          <td>개발자 (1인)</td>
+          <td>유지보수 최소화, 비용 절감, 디버깅 용이성</td>
+          <td>PM2 자동 재시작, 로그 중앙화, 단일 서버</td>
+        </tr>
+        <tr>
+          <td>외부 시스템</td>
+          <td>KIS Developers API</td>
+          <td>안정적인 WebSocket 연결, REST API rate limit 준수</td>
+          <td>Rate limit 초과 없음, 토큰 자동 갱신</td>
+        </tr>
+        <tr>
+          <td>외부 시스템</td>
+          <td>네이버 금융</td>
+          <td>외국인 순매매 데이터 스크래핑 (16:30 cron)</td>
+          <td>HTML 구조 변경 없음 가정 하 정상 수집</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ========== 03. 문제 정의 ========== -->
+  <section id="problem">
+    <div class="section-label">03</div>
+    <div class="section-title">문제 정의 및 해결 방향</div>
+
+    <table class="doc-table" style="margin-bottom:24px;">
+      <thead>
+        <tr><th>v1 문제</th><th>근본 원인</th><th>v2 해결 방식</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>첫 로딩 8~10초</td>
+          <td>Lambda 콜드 스타트 + Authorizer 중첩</td>
+          <td>KT Cloud 상시 실행 서버 (PM2) — 콜드 스타트 없음</td>
+        </tr>
+        <tr>
+          <td>지수 실시간 반영 실패</td>
+          <td>Python Lambda on-demand 크롤링, 비동기 트리거 불안정</td>
+          <td>KIS WebSocket → Python 상시 프로세스 → MySQL → SSE push</td>
+        </tr>
+        <tr>
+          <td>종목 시세 부정확</td>
+          <td>네이버 금융 크롤링 (지연, 데이터 구조 변경 취약)</td>
+          <td>KIS REST API 직접 호출 (30초 폴링)</td>
+        </tr>
+        <tr>
+          <td>높은 유지보수 비용</td>
+          <td>Flutter/Dart — Claude 지원 미흡, 복잡한 AWS 인프라</td>
+          <td>Next.js TypeScript (Claude Code 최적) + KT Cloud 단일 서버</td>
+        </tr>
+        <tr>
+          <td>AWS 비용 발생</td>
+          <td>Lambda, DynamoDB, API Gateway 과금</td>
+          <td>KT Cloud (기보유) 단일 서버로 전환 — 추가 비용 없음</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="margin-bottom:16px;">
+      <div style="font-size:12px; color:var(--color-text-3); margin-bottom:12px;">v2 아키텍처 데이터 흐름</div>
+
+      <div style="background:var(--color-surface-1); border:1px solid var(--color-border); border-radius:12px; padding:20px;">
+        <div style="font-size:11px; color:var(--color-text-3); margin-bottom:10px;">지수 실시간 (SSE push)</div>
+        <div class="arch-row">
+          <div class="arch-node">KIS WebSocket</div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-node">Python 상시 프로세스</div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-node">MySQL index_data</div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-node highlight">/api/sse/index</div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-node highlight">클라이언트 자동 갱신</div>
+        </div>
+
+        <div style="font-size:11px; color:var(--color-text-3); margin:16px 0 10px;">종목 시세 (30초 폴링)</div>
+        <div class="arch-row">
+          <div class="arch-node highlight">클라이언트 (30초)</div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-node">/api/stocks/price</div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-node">KIS REST API</div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-node highlight">UI 갱신</div>
+        </div>
+
+        <div style="font-size:11px; color:var(--color-text-3); margin:16px 0 10px;">외국인 순매매 (daily cron)</div>
+        <div class="arch-row">
+          <div class="arch-node">cron 16:30 (평일)</div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-node">Python 크롤러</div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-node">네이버 금융</div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-node">MySQL foreign_trading</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 04. 기능 요구사항 ========== -->
+  <section id="functional">
+    <div class="section-label">04</div>
+    <div class="section-title">기능 요구사항</div>
+
+    <table class="doc-table">
+      <thead>
+        <tr><th>ID</th><th>카테고리</th><th>요구사항</th><th>우선순위</th><th>상태</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>FR-001</td>
+          <td>인증</td>
+          <td>카카오 소셜 로그인으로 사용자를 인증한다</td>
+          <td><span class="priority p-high">필수</span></td>
+          <td><span class="status s-todo">예정</span></td>
+        </tr>
+        <tr>
+          <td>FR-002</td>
+          <td>인증</td>
+          <td>비로그인 상태에서 모든 경로 접근 시 로그인 페이지로 리다이렉트한다</td>
+          <td><span class="priority p-high">필수</span></td>
+          <td><span class="status s-todo">예정</span></td>
+        </tr>
+        <tr>
+          <td>FR-003</td>
+          <td>지수</td>
+          <td>KOSPI, KOSDAQ, KPI200 지수를 SSE로 실시간 표시한다 (~1-2초 갱신)</td>
+          <td><span class="priority p-high">필수</span></td>
+          <td><span class="status s-todo">예정</span></td>
+        </tr>
+        <tr>
+          <td>FR-004</td>
+          <td>지수</td>
+          <td>지수 등락 양수는 빨간색, 음수는 파란색으로 구분 표시한다</td>
+          <td><span class="priority p-high">필수</span></td>
+          <td><span class="status s-todo">예정</span></td>
+        </tr>
+        <tr>
+          <td>FR-005</td>
+          <td>관심 종목</td>
+          <td>관심 종목의 현재가와 등락률을 30초마다 갱신한다</td>
+          <td><span class="priority p-high">필수</span></td>
+          <td><span class="status s-todo">예정</span></td>
+        </tr>
+        <tr>
+          <td>FR-006</td>
+          <td>관심 종목</td>
+          <td>종목 코드로 관심 종목을 추가한다. 종목명은 KIS API로 자동 조회한다</td>
+          <td><span class="priority p-high">필수</span></td>
+          <td><span class="status s-todo">예정</span></td>
+        </tr>
+        <tr>
+          <td>FR-007</td>
+          <td>관심 종목</td>
+          <td>즐겨찾기(★) 토글로 종목을 목록 최상단에 고정한다</td>
+          <td><span class="priority p-high">필수</span></td>
+          <td><span class="status s-todo">예정</span></td>
+        </tr>
+        <tr>
+          <td>FR-008</td>
+          <td>관심 종목</td>
+          <td>관심 종목을 삭제한다</td>
+          <td><span class="priority p-high">필수</span></td>
+          <td><span class="status s-todo">예정</span></td>
+        </tr>
+        <tr>
+          <td>FR-009</td>
+          <td>외국인 동향</td>
+          <td>관심 종목별 최근 8거래일 외국인 순매수량을 바 차트로 표시한다</td>
+          <td><span class="priority p-high">필수</span></td>
+          <td><span class="status s-todo">예정</span></td>
+        </tr>
+        <tr>
+          <td>FR-010</td>
+          <td>외국인 동향</td>
+          <td>바 차트 수치를 K/M 단위로 축약 표시한다 (예: +2.8M, -450K)</td>
+          <td><span class="priority p-mid">중요</span></td>
+          <td><span class="status s-todo">예정</span></td>
+        </tr>
+        <tr>
+          <td>FR-011</td>
+          <td>외국인 동향</td>
+          <td>외국인 순매매 데이터를 평일 16:30 크롤링하여 DB에 저장한다</td>
+          <td><span class="priority p-high">필수</span></td>
+          <td><span class="status s-todo">예정</span></td>
+        </tr>
+        <tr>
+          <td>FR-012</td>
+          <td>PWA</td>
+          <td>홈 화면 추가 시 스플래시, 풀스크린, 앱 아이콘이 적용된다</td>
+          <td><span class="priority p-mid">중요</span></td>
+          <td><span class="status s-todo">예정</span></td>
+        </tr>
+        <tr>
+          <td>FR-013</td>
+          <td>PWA</td>
+          <td>오프라인 시 마지막 캐시 데이터를 표시한다</td>
+          <td><span class="priority p-low">선택</span></td>
+          <td><span class="status s-todo">예정</span></td>
+        </tr>
+        <tr>
+          <td>FR-014</td>
+          <td>Admin</td>
+          <td>외국인 순매매 크롤러를 수동으로 트리거할 수 있다 (Admin API)</td>
+          <td><span class="priority p-mid">중요</span></td>
+          <td><span class="status s-todo">예정</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ========== 05. 비기능 요구사항 ========== -->
+  <section id="nonfunctional">
+    <div class="section-label">05</div>
+    <div class="section-title">비기능 요구사항</div>
+
+    <table class="doc-table">
+      <thead>
+        <tr><th>분류</th><th>요구사항</th><th>목표 수치</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>성능</td>
+          <td>첫 로딩 시간 (LCP)</td>
+          <td>2초 이내 (v1 대비 5배 개선)</td>
+        </tr>
+        <tr>
+          <td>성능</td>
+          <td>지수 데이터 갱신 지연</td>
+          <td>~1-2초 (SSE push)</td>
+        </tr>
+        <tr>
+          <td>성능</td>
+          <td>종목 시세 최신성</td>
+          <td>최대 30초 지연</td>
+        </tr>
+        <tr>
+          <td>가용성</td>
+          <td>서버 상시 실행</td>
+          <td>PM2 자동 재시작, 콜드 스타트 없음</td>
+        </tr>
+        <tr>
+          <td>보안</td>
+          <td>MySQL 접속 정보 보호</td>
+          <td>서버 사이드 환경변수만 사용, 클라이언트 노출 금지</td>
+        </tr>
+        <tr>
+          <td>보안</td>
+          <td>KIS API 키 보호</td>
+          <td>서버 환경변수만 사용, API Routes에서만 호출</td>
+        </tr>
+        <tr>
+          <td>보안</td>
+          <td>API 인증</td>
+          <td>모든 API Routes에서 getServerSession()으로 인증 확인</td>
+        </tr>
+        <tr>
+          <td>유지보수</td>
+          <td>로그 중앙화</td>
+          <td>PM2 로그 + /home/fiflow/logs/ 통합 관리</td>
+        </tr>
+        <tr>
+          <td>비용</td>
+          <td>추가 인프라 비용</td>
+          <td>KT Cloud 기보유 서버 활용 — 추가 비용 없음</td>
+        </tr>
+        <tr>
+          <td>API 제한</td>
+          <td>KIS REST API Rate Limit</td>
+          <td>최소 30초 간격 폴링 준수</td>
+        </tr>
+        <tr>
+          <td>코드 품질</td>
+          <td>TypeScript any 금지</td>
+          <td>모든 타입 명시, ESLint 통과</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ========== 06. 기능 명세 ========== -->
+  <section id="spec">
+    <div class="section-label">06</div>
+    <div class="section-title">주요 기능 명세</div>
+
+    <!-- F-01 인증 -->
+    <div class="feature-block">
+      <div class="feature-id">F-01 · 인증 시스템</div>
+      <div class="feature-name">카카오 소셜 로그인 / 세션 관리</div>
+      <div class="feature-desc">
+        NextAuth.js + 카카오 Provider를 사용하여 OAuth 2.0 인증을 구현한다.
+        미들웨어가 모든 경로를 보호하며, 비로그인 접근을 /login으로 리다이렉트한다.
+      </div>
+      <ul class="req-list">
+        <li><span class="req-tag req-must">MUST</span>카카오 디벨로퍼스 OAuth APP_KEY, APP_SECRET 환경변수 설정</li>
+        <li><span class="req-tag req-must">MUST</span>로그인 성공 시 NextAuth session을 생성하고 브라우저에 저장</li>
+        <li><span class="req-tag req-must">MUST</span>Next.js 미들웨어에서 세션 없는 접근을 /login으로 리다이렉트</li>
+        <li><span class="req-tag req-must">MUST</span>서버 컴포넌트에서 getServerSession(), 클라이언트에서 useSession() 사용</li>
+        <li><span class="req-tag req-must">MUST</span>로그아웃 시 NextAuth signOut()으로 세션 완전 삭제</li>
+        <li><span class="req-tag req-must">MUST</span>최초 로그인 시 users 테이블에 kakao_id, email, nickname INSERT</li>
+        <li><span class="req-tag req-should">SHOULD</span>재로그인 시 users 테이블 중복 처리 (ON DUPLICATE KEY UPDATE)</li>
+      </ul>
+    </div>
+
+    <!-- F-02 지수 실시간 -->
+    <div class="feature-block">
+      <div class="feature-id">F-02 · 지수 실시간 표시</div>
+      <div class="feature-name">KOSPI / KOSDAQ / KPI200 SSE 실시간 갱신</div>
+      <div class="feature-desc">
+        Python 프로세스가 KIS WebSocket을 구독하여 MySQL에 지수 데이터를 저장하고,
+        Next.js SSE 엔드포인트가 MySQL을 폴링하여 클라이언트에 push한다.
+      </div>
+      <ul class="req-list">
+        <li><span class="req-tag req-must">MUST</span>Python kis_websocket.py가 KIS WebSocket으로 KOSPI, KOSDAQ, KPI200 구독</li>
+        <li><span class="req-tag req-must">MUST</span>수신 데이터를 MySQL index_data 테이블에 upsert (ON DUPLICATE KEY UPDATE)</li>
+        <li><span class="req-tag req-must">MUST</span>/api/sse/index 엔드포인트가 MySQL을 1초 간격 폴링, 변경 시 SSE 이벤트 전송</li>
+        <li><span class="req-tag req-must">MUST</span>클라이언트 EventSource로 구독, 연결 끊김 시 자동 재연결</li>
+        <li><span class="req-tag req-must">MUST</span>SSE 헤더: Content-Type: text/event-stream, Cache-Control: no-cache</li>
+        <li><span class="req-tag req-should">SHOULD</span>장 시간(09:00-15:30 KST, 평일) 외에는 마지막 데이터를 유지 표시</li>
+        <li><span class="req-tag req-should">SHOULD</span>라이브 도트(●) 애니메이션으로 실시간 연결 상태 표시</li>
+      </ul>
+    </div>
+
+    <!-- F-03 관심 종목 -->
+    <div class="feature-block">
+      <div class="feature-id">F-03 · 관심 종목 관리</div>
+      <div class="feature-name">종목 추가 / 삭제 / 즐겨찾기 / 시세 조회</div>
+      <div class="feature-desc">
+        사용자가 종목 코드로 관심 종목을 등록하면 KIS API로 종목명을 자동 조회한다.
+        KIS REST API로 30초마다 현재가를 갱신하며, 즐겨찾기 종목은 항상 상단에 고정된다.
+      </div>
+      <ul class="req-list">
+        <li><span class="req-tag req-must">MUST</span>종목 코드 입력 → /api/stocks/price로 KIS API 종목명 조회 → DB 저장</li>
+        <li><span class="req-tag req-must">MUST</span>관심 종목 현재가를 30초마다 KIS REST API로 갱신 (Rate Limit 준수)</li>
+        <li><span class="req-tag req-must">MUST</span>★ 즐겨찾기 토글 → watchlist.is_favorite UPDATE → 목록 상단 고정</li>
+        <li><span class="req-tag req-must">MUST</span>종목 삭제 시 MySQL watchlist DELETE, 관련 외국인 데이터는 유지</li>
+        <li><span class="req-tag req-should">SHOULD</span>종목 카드에 등락 뱃지(▲▼) 빨강/파랑 색상 표시</li>
+        <li><span class="req-tag req-nice">NICE</span>종목 코드 자동완성 (KIS API 종목 목록 기반)</li>
+      </ul>
+    </div>
+
+    <!-- F-04 외국인 순매매 -->
+    <div class="feature-block">
+      <div class="feature-id">F-04 · 외국인 순매매 동향</div>
+      <div class="feature-name">8거래일 순매수/순매도 바 차트</div>
+      <div class="feature-desc">
+        Python 크롤러가 평일 16:30에 네이버 금융에서 외국인 순매매 데이터를 수집한다.
+        각 관심 종목 카드 하단에 최근 8거래일 바 차트를 표시한다.
+      </div>
+      <ul class="req-list">
+        <li><span class="req-tag req-must">MUST</span>foreign_crawler.py가 평일 16:30 cron으로 네이버 금융 스크래핑</li>
+        <li><span class="req-tag req-must">MUST</span>수집 데이터를 MySQL foreign_trading 테이블에 upsert (ON DUPLICATE KEY UPDATE)</li>
+        <li><span class="req-tag req-must">MUST</span>관심 종목별 최근 8거래일 데이터를 /api/foreign-trading 엔드포인트로 제공</li>
+        <li><span class="req-tag req-must">MUST</span>순매수(양수): 빨간색 막대 (중간선 기준 위 방향)</li>
+        <li><span class="req-tag req-must">MUST</span>순매도(음수): 파란색 막대 (중간선 기준 아래 방향)</li>
+        <li><span class="req-tag req-must">MUST</span>수치를 K/M 단위로 축약 표시 (+2.8M, -450K)</li>
+        <li><span class="req-tag req-should">SHOULD</span>데이터 없는 날(주말, 공휴일)은 차트에서 건너뜀</li>
+      </ul>
+    </div>
+
+    <!-- F-05 SSE 엔드포인트 -->
+    <div class="feature-block">
+      <div class="feature-id">F-05 · SSE 엔드포인트</div>
+      <div class="feature-name">/api/sse/index — 서버 → 클라이언트 실시간 Push</div>
+      <div class="feature-desc">
+        서버가 MySQL을 폴링하여 변경된 지수 데이터를 SSE로 클라이언트에 전송한다.
+      </div>
+      <ul class="req-list">
+        <li><span class="req-tag req-must">MUST</span>응답 헤더: Content-Type: text/event-stream, Cache-Control: no-cache, Connection: keep-alive</li>
+        <li><span class="req-tag req-must">MUST</span>1초 간격으로 MySQL index_data 조회, 변경 시 data: JSON 형식으로 전송</li>
+        <li><span class="req-tag req-must">MUST</span>클라이언트 연결 종료 감지 시 폴링 루프 종료 (메모리 누수 방지)</li>
+        <li><span class="req-tag req-must">MUST</span>Next.js App Router Route Handler (GET) 로 구현</li>
+        <li><span class="req-tag req-should">SHOULD</span>클라이언트 재연결 시 즉시 현재 데이터 전송 (초기 로드 깜빡임 방지)</li>
+      </ul>
+    </div>
+
+    <!-- F-06 Admin API -->
+    <div class="feature-block">
+      <div class="feature-id">F-06 · Admin API</div>
+      <div class="feature-name">크롤러 수동 트리거 및 상태 조회</div>
+      <div class="feature-desc">
+        개발자가 외부에서 크롤러를 수동으로 실행하고 상태를 확인할 수 있는 API를 제공한다.
+        X-Admin-Key 헤더로 인증한다.
+      </div>
+      <ul class="req-list">
+        <li><span class="req-tag req-must">MUST</span>POST /api/admin/crawl/foreign — 외국인 순매매 크롤러 수동 실행</li>
+        <li><span class="req-tag req-must">MUST</span>GET /api/admin/crawl/status — 마지막 크롤링 시각, 수집 건수, 상태 반환</li>
+        <li><span class="req-tag req-must">MUST</span>X-Admin-Key 헤더 검증 (환경변수 ADMIN_API_KEY와 비교)</li>
+        <li><span class="req-tag req-should">SHOULD</span>실행 결과(성공/실패, 소요 시간, 수집 건수)를 JSON으로 반환</li>
+        <li><span class="req-tag req-should">SHOULD</span>실행 로그를 /home/fiflow/logs/crawler.log에 기록</li>
+      </ul>
+    </div>
+
+    <!-- F-07 PWA -->
+    <div class="feature-block">
+      <div class="feature-id">F-07 · PWA</div>
+      <div class="feature-name">홈 화면 추가 — 네이티브 앱 경험</div>
+      <div class="feature-desc">
+        next-pwa를 통해 모바일에서 홈 화면에 추가 시 네이티브 앱처럼 동작한다.
+      </div>
+      <ul class="req-list">
+        <li><span class="req-tag req-must">MUST</span>manifest.json: name, short_name, icons, display: standalone 설정</li>
+        <li><span class="req-tag req-must">MUST</span>홈 화면 추가 시 스플래시 화면, 풀스크린, 앱 아이콘 적용</li>
+        <li><span class="req-tag req-should">SHOULD</span>Service Worker로 정적 자산 캐싱 (오프라인 시 마지막 화면 표시)</li>
+        <li><span class="req-tag req-nice">NICE</span>iOS Safari 홈 화면 추가 배너 안내</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ========== 07. 로드맵 ========== -->
+  <section id="roadmap">
+    <div class="section-label">07</div>
+    <div class="section-title">개발 로드맵</div>
+
+    <table class="doc-table">
+      <thead>
+        <tr><th>순서</th><th>작업</th><th>의존성</th><th>우선순위</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td>MySQL 스키마 생성 (KT Cloud 서버)</td>
+          <td>없음</td>
+          <td><span class="priority p-high">필수</span></td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>Next.js 프로젝트 초기화 — App Router, TypeScript, Tailwind, PWA</td>
+          <td>없음</td>
+          <td><span class="priority p-high">필수</span></td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>NextAuth.js 카카오 로그인/로그아웃 + 미들웨어</td>
+          <td>1, 2</td>
+          <td><span class="priority p-high">필수</span></td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td>KIS REST API 종목 시세 연동 (/api/stocks/price)</td>
+          <td>2</td>
+          <td><span class="priority p-high">필수</span></td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td>메인 대시보드 UI — 지수 카드 + 관심 종목 레이아웃</td>
+          <td>2, 3</td>
+          <td><span class="priority p-high">필수</span></td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td>SSE 엔드포인트 (/api/sse/index) — MySQL 폴링 → 클라이언트 push</td>
+          <td>1, 2</td>
+          <td><span class="priority p-high">필수</span></td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td>Python KIS WebSocket (kis_websocket.py) — 지수 수신 → MySQL write</td>
+          <td>1</td>
+          <td><span class="priority p-high">필수</span></td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td>외국인 순매매 크롤러 (foreign_crawler.py) + 바 차트 UI</td>
+          <td>1, 5</td>
+          <td><span class="priority p-high">필수</span></td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td>관심 종목 관리 UI — 추가/삭제/즐겨찾기</td>
+          <td>3, 4, 5</td>
+          <td><span class="priority p-high">필수</span></td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td>PWA 설정 — manifest, Service Worker, 홈 화면 추가</td>
+          <td>2, 5</td>
+          <td><span class="priority p-mid">중요</span></td>
+        </tr>
+        <tr>
+          <td>11</td>
+          <td>Admin API — 크롤러 수동 실행 + 상태 조회</td>
+          <td>8</td>
+          <td><span class="priority p-mid">중요</span></td>
+        </tr>
+        <tr>
+          <td>12</td>
+          <td>KT Cloud 배포 — PM2, cron, Nginx, HTTPS</td>
+          <td>전체</td>
+          <td><span class="priority p-high">필수</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <strong>DB 스키마 변경이 포함된 작업은 반드시 순차 처리</strong>한다.<br/>
+      1 → 2 → 3 → (4, 6, 7 병렬) → 5 → (8, 9 병렬) → 10, 11 → 12
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

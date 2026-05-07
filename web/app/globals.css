@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+/* ── 브랜드 색상 + 다크 테마 기본값 ── */
+:root {
+  /* 브랜드 (테마 불변) */
+  --color-primary:   #DEFF9A;
+  --color-up:        #FF4E4E;
+  --color-up-bg:     rgba(255, 78, 78, 0.15);
+  --color-up-text:   #FF4E4E;
+  --color-down:      #4E9EFF;
+  --color-down-bg:   rgba(78, 158, 255, 0.15);
+  --color-down-text: #4E9EFF;
+  --color-star:      #DEFF9A;
+
+  /* 다크 테마 기본값 */
+  --bg:           #050505;
+  --bg-subtle:    #111111;
+  --card-bg:      #111111;
+  --border:       #2E2E2E;
+  --text:         #F5F5F5;
+  --text-muted:   #A0A0A0;
+  --input-bg:     #1A1A1A;
+  --input-border: #2E2E2E;
+  --stats-bg:     #1A1A1A;
+  --avatar-bg:    #1A1A1A;
+  --avatar-text:  #DEFF9A;
+}
+
+/* ── 다크 테마 명시 ── */
+body[data-theme="dark"] {
+  --bg:           #050505;
+  --bg-subtle:    #111111;
+  --card-bg:      #111111;
+  --border:       #2E2E2E;
+  --text:         #F5F5F5;
+  --text-muted:   #A0A0A0;
+  --input-bg:     #1A1A1A;
+  --input-border: #2E2E2E;
+  --stats-bg:     #1A1A1A;
+  --avatar-bg:    #1A1A1A;
+  --avatar-text:  #DEFF9A;
+}
+
+/* ── 라이트 테마 ── */
+body[data-theme="light"] {
+  --color-primary:   #5a9e2f;   /* 라임 → 진한 초록 (흰배경 가독성) */
+  --color-star:      #5a9e2f;
+  --bg:           #ffffff;
+  --bg-subtle:    #f8f9fa;
+  --card-bg:      #ffffff;
+  --border:       #e5e7eb;
+  --text:         #111827;
+  --text-muted:   #9ca3af;
+  --input-bg:     #ffffff;
+  --input-border: #d1d5db;
+  --stats-bg:     #f8f9fa;
+  --avatar-bg:    #f0fde4;
+  --avatar-text:  #3d7a1a;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-urbanist, -apple-system, BlinkMacSystemFont, sans-serif);
+  -webkit-font-smoothing: antialiased;
+}

@@ -1,0 +1,17 @@
+# env
+.env
+.env.local
+.env.*
+crawler/.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+crawler/venv/
+
+# macOS
+.DS_Store
+
+# Node
+node_modules/
