@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FIFlow v2 — Web
 
-## Getting Started
+Next.js 기반 프론트엔드 + API 서버. 루트 README는 [../README.md](../README.md) 참고.
 
-First, run the development server:
+## 개발 서버 실행
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+[http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 환경변수
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+`.env.local` 파일을 프로젝트 루트(`web/`)에 생성:
 
-## Learn More
+```
+MYSQL_HOST=
+MYSQL_PORT=3306
+MYSQL_USER=fiflow
+MYSQL_PASSWORD=
+MYSQL_DATABASE=fiflow
 
-To learn more about Next.js, take a look at the following resources:
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+KAKAO_CLIENT_ID=
+KAKAO_CLIENT_SECRET=
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+KIS_APP_KEY=
+KIS_APP_SECRET=
+```
 
-## Deploy on Vercel
+## 주요 디렉토리
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+app/
+├── (auth)/login/        # 카카오 로그인
+├── (dashboard)/         # 메인 대시보드, 관심종목, 캘린더, 마이
+└── api/
+    ├── sse/index/       # SSE 엔드포인트 (지수 실시간)
+    ├── stocks/price/    # KIS REST API 종목 시세
+    ├── watchlist/       # 관심종목 CRUD
+    ├── foreign-trading/ # 외국인 순매매 조회
+    └── admin/crawl/     # 크롤러 수동 트리거
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+components/              # UI 컴포넌트
+lib/
+├── db/                  # MySQL 클라이언트
+└── kis/                 # KIS API 클라이언트
+store/                   # Zustand 상태
+types/                   # TypeScript 타입 정의
+```
+
+## 빌드
+
+```bash
+npm run build
+npm run start
+```
