@@ -8,7 +8,7 @@ export async function proxy(request: NextRequest) {
   // 인증 불필요 경로
   if (
     pathname.startsWith('/login') ||
-    pathname.startsWith('/api/auth') ||
+    pathname.startsWith('/api') ||
     pathname.startsWith('/_next') ||
     pathname.startsWith('/favicon') ||
     pathname.startsWith('/icons') ||
@@ -27,5 +27,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!login|api/auth|_next|favicon|icons|manifest|sw\\.js).*)'],
+  matcher: ['/((?!login|api|_next|favicon|icons|manifest|sw\\.js).*)'],
 }
