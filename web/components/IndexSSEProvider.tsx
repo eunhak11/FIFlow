@@ -48,6 +48,23 @@ function IndexCard({ data }: { data: IndexData }) {
   )
 }
 
+function SkeletonCard() {
+  return (
+    <div
+      style={{
+        background: 'var(--card-bg)',
+        borderRadius: '12px',
+        padding: '10px 10px 8px',
+        border: '1px solid var(--border)',
+      }}
+    >
+      <div style={{ width: '40px', height: '10px', background: 'var(--border)', borderRadius: '4px', marginBottom: '10px' }} />
+      <div style={{ width: '70px', height: '20px', background: 'var(--border)', borderRadius: '4px', marginBottom: '6px' }} />
+      <div style={{ width: '50px', height: '12px', background: 'var(--border)', borderRadius: '4px' }} />
+    </div>
+  )
+}
+
 export default function IndexSSEProvider({ initialData }: { initialData: IndexData[] }) {
   const [indices, setIndices] = useState<IndexData[]>(initialData)
 
@@ -65,9 +82,10 @@ export default function IndexSSEProvider({ initialData }: { initialData: IndexDa
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
-      {indices.map((index) => (
-        <IndexCard key={index.index_name} data={index} />
-      ))}
+      {indices.length === 0
+        ? [0, 1, 2].map((i) => <SkeletonCard key={i} />)
+        : indices.map((index) => <IndexCard key={index.index_name} data={index} />)
+      }
     </div>
   )
 }

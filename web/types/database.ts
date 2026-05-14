@@ -1,10 +1,8 @@
 export type IndexData = {
-  id: string
   index_name: 'KOSPI' | 'KOSDAQ' | 'KPI200'
   price: number
   change: number
   change_rate: number
-  updated_at: string
 }
 
 export type WatchlistItem = {
