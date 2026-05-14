@@ -24,15 +24,7 @@ function getDemoPrice(symbol: string): StockPrice {
     // 등록된 종목이지만 데모 데이터 없는 경우 — KIS API 연동 후 자동 해결
     return { symbol, name: symbol, price: 0, change: 0, change_rate: 0 }
   }
-  // 소폭 랜덤 변동 (±0.3%) — 실시간처럼 보이도록
-  const jitter = 1 + (Math.random() - 0.5) * 0.006
-  return {
-    symbol,
-    name: base.name,
-    price: Math.round(base.price * jitter),
-    change: Math.round(base.change * jitter),
-    change_rate: parseFloat((base.change_rate * jitter).toFixed(2)),
-  }
+  return { symbol, ...base }
 }
 
 export async function GET(request: NextRequest) {
