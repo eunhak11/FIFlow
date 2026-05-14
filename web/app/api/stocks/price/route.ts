@@ -11,11 +11,12 @@ import type { ApiResponse, StockPrice } from '@/types/database'
 // import { getStockPrice } from '@/lib/kis/client'
 
 const DEMO_PRICES: Record<string, Omit<StockPrice, 'symbol'>> = {
-  '005930': { name: '삼성전자',          price: 56200,  change:  800,  change_rate:  1.44 },
-  '000660': { name: 'SK하이닉스',        price: 183500, change: 2500,  change_rate:  1.38 },
-  '035720': { name: '카카오',            price: 37650,  change: -450,  change_rate: -1.18 },
-  '105560': { name: 'KB금융',            price: 87400,  change: 1100,  change_rate:  1.27 },
-  '950210': { name: '프레스티지바이오파마', price:  8140,  change: -210,  change_rate: -2.51 },
+  '005930': { name: '삼성전자',           price:  296000, change:  12000, change_rate:  4.23 },
+  '000660': { name: 'SK하이닉스',         price: 1970000, change:  -6000, change_rate: -0.30 },
+  '035720': { name: '카카오',             price:   45950, change:   3000, change_rate:  6.98 },
+  '105560': { name: 'KB금융',             price:  156000, change:   4000, change_rate:  2.63 },
+  '950210': { name: '프레스티지바이오파마', price:    7890, change:    170, change_rate:  2.20 },
+  '005380': { name: '현대차',             price:  712000, change:   2000, change_rate:  0.28 },
 }
 
 function getDemoPrice(symbol: string): StockPrice {

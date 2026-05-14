@@ -2,7 +2,19 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import pool from '@/lib/db/client'
-import { getStockName } from '@/lib/kis/client'
+// import { getStockName } from '@/lib/kis/client'  // TODO: KIS API 연동 후 복원
+
+// ─── MOCK: KIS API 미연결 임시 종목명 조회 ───────────────────────────────────
+const MOCK_NAMES: Record<string, string> = {
+  '005930': '삼성전자', '000660': 'SK하이닉스', '035720': '카카오',
+  '105560': 'KB금융', '950210': '프레스티지바이오파마', '005380': '현대차',
+}
+async function getStockName(symbol: string): Promise<string> {
+  const name = MOCK_NAMES[symbol]
+  if (!name) throw new Error('등록되지 않은 종목 코드입니다')
+  return name
+}
+// ─────────────────────────────────────────────────────────────────────────────
 import type { RowDataPacket, ResultSetHeader } from 'mysql2'
 import type { ApiResponse, WatchlistItem } from '@/types/database'
 
